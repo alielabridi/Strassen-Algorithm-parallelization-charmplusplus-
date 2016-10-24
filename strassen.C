@@ -120,7 +120,7 @@ class strassen : public CBase_strassen  {
 
             CkFuture p1add1 = CkCreateFuture(); //A11+A22
             CkFuture p1add2 = CkCreateFuture(); //B11+B22
-            //i could spawn all the additions needed here
+            //i could spawn all the additions needed here   
             CProxy_addition::ckNew(size-1, f1);//param not matching yet just a pseudo code
             CProxy_addition::ckNew(size-1, f1);//param not matching yet just a pseudo code
             ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1add1);
@@ -130,6 +130,8 @@ class strassen : public CBase_strassen  {
             //i could free m1 and m2 at this point
             ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p1);
             p1 = m3->v; //returned product of the two summation
+            //i can free m3 at this point
+            // thinking of using CkProbeFuture instead of wait to not block the next products
 
 
 
