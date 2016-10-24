@@ -131,7 +131,8 @@ class strassen : public CBase_strassen  {
             ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p1);
             p1 = m3->v; //returned product of the two summation
             //i can free m3 at this point
-            // thinking of using CkProbeFuture instead of wait to not block the next products
+            // thinking of using CkProbeFuture on (p1,p2,p3...) instead of wait to not block the next products
+            //or should I use a block instead?
 
 
 
