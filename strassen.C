@@ -25,7 +25,7 @@ class Main : public CBase_Main {
         CkFuture f = CkCreateFuture();
         CProxy_strassen::ckNew(size, f);
         ValueMsg * m = (ValueMsg *) CkWaitFuture(f); 
-        CkPrintf("The requested strassenonacci number is : %d\n", m->v[0][0]);
+        CkPrintf("The number is : %d\n", m->v[0][0]);
         CkExit(); delete m;
     }  
 };
@@ -82,12 +82,12 @@ class strassen : public CBase_strassen  {
     public:  
     strassen(CkMigrateMessage *m) {};
     strassen(int size, CkFuture f){ thisProxy.run(size, f); }
-    int seqFib(int size){
+/*    int seqFib(int size){
         if ((size == 1) || (size == 0)) {
                 return size;
             }
         return seqFib(size - 1) + seqFib(size - 2);
-    }
+    }*/
 /*
     void ikjalgorithm(vector< vector<int> > A, 
                                    vector< vector<int> > B,
@@ -103,8 +103,8 @@ class strassen : public CBase_strassen  {
     void run(int size, CkFuture f) {
 
         //if (n< THRESHOLD)
-        if(size < THRESHOLD) 
-            result = seqFib(size);
+        if(size < THRESHOLD);
+            //result = ikjalgorithm(size);
         else {  
             //declaration of submatrices needed here
             int newSize = size/2;
@@ -115,10 +115,26 @@ class strassen : public CBase_strassen  {
             c11(newSize,inner), c12(newSize,inner), c21(newSize,inner), c22(newSize,inner),
             p1(newSize,inner), p2(newSize,inner), p3(newSize,inner), p4(newSize,inner), 
             p5(newSize,inner), p6(newSize,inner), p7(newSize,inner),
-            aResult(newSize,inner), bResult(newSize,inner);
+            
 
 
-            CkFuture f1 = CkCreateFuture();
+            CkFuture p1add1 = CkCreateFuture(); //A11+A22
+            CkFuture p1add2 = CkCreateFuture(); //B11+B22
+            //i could spawn all the additions needed here
+            CProxy_addition::ckNew(size-1, f1);//param not matching yet just a pseudo code
+            CProxy_addition::ckNew(size-1, f1);//param not matching yet just a pseudo code
+            ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1add1);
+            ValueMsg * m2 = (ValueMsg *) CkWaitFuture(p1add2);
+            CkFuture p1 = CkCreateFuture();
+            CProxy_strassen::ckNew(size-1, f1); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
+            //i could free m1 and m2 at this point
+            ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p1);
+            p1 = m3->v; //returned product of the two summation
+
+
+
+
+
             CkFuture f2 = CkCreateFuture();
             CProxy_strassen::ckNew(size-1, f1);
             CProxy_strassen::ckNew(size-2, f2);
