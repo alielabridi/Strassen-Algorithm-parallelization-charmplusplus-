@@ -134,9 +134,10 @@ class strassen : public CBase_strassen  {
             // thinking of using CkProbeFuture on (p1,p2,p3...) instead of wait to not block the next products
             //or should I use a block instead?
 
+            //at this points we should wait for p1,p2,p3... to compute c11,c22,,c12,c21
+            //combine it into a big C and return it in the form of a msg
 
-
-
+            //to not take into consideration just a chunk of code taken from fib
 
             CkFuture f2 = CkCreateFuture();
             CProxy_strassen::ckNew(size-1, f1);
