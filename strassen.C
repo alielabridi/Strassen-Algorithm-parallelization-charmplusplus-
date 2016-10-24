@@ -76,6 +76,40 @@ class substraction :public CBase_substraction{
     }
 };
 
+class strassenSub: public CBase_strassenSub{
+public:
+    strassenSub(CkMigrateMessage *m) {};
+    //overload the function to take three matrices or four
+    strassenSub(int size, CkFuture f){ thisProxy.run(size, f); }
+
+    void run(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size){
+    //do the addition/substraction, and wait for for the result then call on it the bigger strassen chare
+    //if needed a big multiplication
+    //inside the bigger strassen chare it will decide whether to use the naive or strassen algo
+
+    CkFuture p1add1 = CkCreateFuture(); //A11+A22
+    CkFuture p1add2 = CkCreateFuture(); //B11+B22
+    //i could spawn all the additions needed here   
+    CProxy_addition::ckNew(size-1, f1);//param not matching yet just a pseudo code
+    CProxy_addition::ckNew(size-1, f1);//param not matching yet just a pseudo code
+    ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1add1);
+    ValueMsg * m2 = (ValueMsg *) CkWaitFuture(p1add2);
+    CkFuture p1 = CkCreateFuture();
+    CProxy_strassen::ckNew(size-1, f1); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
+    //i could free m1 and m2 at this point
+    ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p1);
+    p1 = m3->v; //returned product of the two summation
+    //i can free m3 at this point
+    // thinking of using CkProbeFuture on (p1,p2,p3...) instead of wait to not block the next products
+    //or should I use a block instead? UPDATES: I guess by now that I am using strassenSub It will be ok   
+
+    ValueMsg *m = new ValueMsg(size);
+    m->v = C;
+    CkSendToFuture(f, m);
+
+
+
+};
 class strassen : public CBase_strassen  {
     private:  int result, count, IamRoot;  CProxy_strassen parent;
 
@@ -116,23 +150,11 @@ class strassen : public CBase_strassen  {
             p1(newSize,inner), p2(newSize,inner), p3(newSize,inner), p4(newSize,inner), 
             p5(newSize,inner), p6(newSize,inner), p7(newSize,inner),
             
+            // call for future (p1,p2....p7) with future then recolt the result
+
+            //do the next computation with it
 
 
-            CkFuture p1add1 = CkCreateFuture(); //A11+A22
-            CkFuture p1add2 = CkCreateFuture(); //B11+B22
-            //i could spawn all the additions needed here   
-            CProxy_addition::ckNew(size-1, f1);//param not matching yet just a pseudo code
-            CProxy_addition::ckNew(size-1, f1);//param not matching yet just a pseudo code
-            ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1add1);
-            ValueMsg * m2 = (ValueMsg *) CkWaitFuture(p1add2);
-            CkFuture p1 = CkCreateFuture();
-            CProxy_strassen::ckNew(size-1, f1); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
-            //i could free m1 and m2 at this point
-            ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p1);
-            p1 = m3->v; //returned product of the two summation
-            //i can free m3 at this point
-            // thinking of using CkProbeFuture on (p1,p2,p3...) instead of wait to not block the next products
-            //or should I use a block instead?
 
             //at this points we should wait for p1,p2,p3... to compute c11,c22,,c12,c21
             //combine it into a big C and return it in the form of a msg
