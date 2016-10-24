@@ -1,0 +1,20 @@
+mainmodule strassen {
+message ValueMsg;
+	mainchare Main {  
+	entry Main(CkArgMsg *m);
+	entry [threaded] void run(int size);
+	};
+	chare strassen {  
+	entry strassen(int size, CkFuture f);
+	entry [threaded] void run(int size, CkFuture f);
+	};  
+	chare addition {  
+	entry addition(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size);
+	entry [threaded] void run(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size);
+	};
+	chare substraction {  
+	entry substraction(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size);
+	entry [threaded] void run(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size);
+	};
+
+ }
