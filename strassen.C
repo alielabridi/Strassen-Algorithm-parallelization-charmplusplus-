@@ -80,9 +80,14 @@ class strassenSub: public CBase_strassenSub{
 public:
     strassenSub(CkMigrateMessage *m) {};
     //overload the function to take three matrices or four
-    strassenSub(int size, CkFuture f){ thisProxy.run(size, f); }
+    //how should I adapt the class to implement for substraction
+    strassenSub(CkFuture f,std::vector<std::vector<int>> A,
+                 std::vector<std::vector<int>> B, std::vector<std::vector<int>> C, std::vector<std::vector<int>> D,
+                  int size){ thisProxy.run(f,A,B,C,D,size); }
 
-    void run(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size){
+    void run(CkFuture f,std::vector<std::vector<int>> A,
+                 std::vector<std::vector<int>> B, std::vector<std::vector<int>> C, std::vector<std::vector<int>> D,
+                  int size){
     //do the addition/substraction, and wait for for the result then call on it the bigger strassen chare
     //if needed a big multiplication
     //inside the bigger strassen chare it will decide whether to use the naive or strassen algo
@@ -90,22 +95,25 @@ public:
     CkFuture p1add1 = CkCreateFuture(); //A11+A22
     CkFuture p1add2 = CkCreateFuture(); //B11+B22
     //i could spawn all the additions needed here   
-    CProxy_addition::ckNew(size-1, f1);//param not matching yet just a pseudo code
-    CProxy_addition::ckNew(size-1, f1);//param not matching yet just a pseudo code
+    CProxy_addition::ckNew(p1add1,A,B,size);//param not matching yet just a pseudo code
+    CProxy_addition::ckNew(p1add2,C,D,size);//param not matching yet just a pseudo code
+    ValueMsg *m1 = new ValueMsg(size);
+    ValueMsg *m2 = new ValueMsg(size);
     ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1add1);
     ValueMsg * m2 = (ValueMsg *) CkWaitFuture(p1add2);
+
+
     CkFuture p1 = CkCreateFuture();
-    CProxy_strassen::ckNew(size-1, f1); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
+    CProxy_strassen::ckNew(p1,m1->v,m2->v f1); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
     //i could free m1 and m2 at this point
+    ValueMsg *m3 = new ValueMsg(size);
     ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p1);
-    p1 = m3->v; //returned product of the two summation
+    //p1 = m3->v; //returned product of the two summation
     //i can free m3 at this point
     // thinking of using CkProbeFuture on (p1,p2,p3...) instead of wait to not block the next products
     //or should I use a block instead? UPDATES: I guess by now that I am using strassenSub It will be ok   
 
-    ValueMsg *m = new ValueMsg(size);
-    m->v = C;
-    CkSendToFuture(f, m);
+    CkSendToFuture(f, p1);
 
 
 
@@ -115,7 +123,7 @@ class strassen : public CBase_strassen  {
 
     public:  
     strassen(CkMigrateMessage *m) {};
-    strassen(int size, CkFuture f){ thisProxy.run(size, f); }
+    strassen(CkFuture f,std::vector<std::vector<int>> A,std::vector<std::vector<int>> B,int size){ thisProxy.run(f,A,B,size); }
 /*    int seqFib(int size){
         if ((size == 1) || (size == 0)) {
                 return size;
@@ -134,7 +142,7 @@ class strassen : public CBase_strassen  {
             }
         }
     }*/
-    void run(int size, CkFuture f) {
+    void run(CkFuture f,std::vector<std::vector<int>> A,std::vector<std::vector<int>> B,int size) {
 
         //if (n< THRESHOLD)
         if(size < THRESHOLD);
@@ -154,6 +162,10 @@ class strassen : public CBase_strassen  {
 
             //do the next computation with it
 
+            //the value of P1
+            CkFuture p1Future = CkCreateFuture();
+            CProxy_strassenSub::ckNew(p1Future, a11, a22, b11, b22);
+            ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1Future);
 
 
             //at this points we should wait for p1,p2,p3... to compute c11,c22,,c12,c21
