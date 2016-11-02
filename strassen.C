@@ -257,7 +257,7 @@ class strassen : public CBase_strassen  {
             std::vector<int> innerResult (size);
             std::vector< std::vector<int> > result(size,inner);
 
-
+/*
         std::vector< std::vector<int> > ikjalgorithm(std::vector< std::vector<int> > A, 
                    std::vector< std::vector<int> > B,
                    int size) {
@@ -270,16 +270,22 @@ class strassen : public CBase_strassen  {
                 }
             }
             return C;
-        }
+        }*/
 
 
         //if (n< THRESHOLD)
         if(size < THRESHOLD){
-            result = ikjalgorithm(A,B,size);
+             for (int i = 0; i < size; i++) {
+                for (int k = 0; k < size; k++) {
+                    for (int j = 0; j < size; j++) {
+                        result[i][j] += A[i][k] * B[k][j];
+                    }
+                }
+            }
+
         }
         else {
-
-        //dividing the matrices in 4 sub-matrices:
+//dividing the matrices in 4 sub-matrices:
         for (int i = 0; i < newSize; i++) {
             for (int j = 0; j < newSize; j++) {
                 a11[i][j] = A[i][j];
@@ -348,13 +354,14 @@ class strassen : public CBase_strassen  {
 
             /*do we need another chare for the C1,C2,C3,C4 ?*/
             /*compute C11 = M1+M4-M5+M7*/
-            for (int i = 0; i < newSize; i++)
+            for (int i = 0; i < newSize; i++){
                 for (int j = 0; j < newSize; j++) {
                     c11[i][j] = m1->v[i][j] + m4->v[i][j] - m5->v[i][j] + m7->v[i][j];
                     c12[i][j] = m3->v[i][j] + m5->v[i][j];
                     c21[i][j] = m2->v[i][j] + m4->v[i][j];
                     c22[i][j] = m1->v[i][j] - m2->v[i][j] + m3->v[i][j] + m6->v[i][j];
-                }
+                } 
+            }
 
 
 
