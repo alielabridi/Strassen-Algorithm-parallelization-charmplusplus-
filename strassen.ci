@@ -2,11 +2,25 @@ mainmodule strassen {
 message ValueMsg;
 	mainchare Main {  
 	entry Main(CkArgMsg *m);
-	entry [threaded] void run(int size);
+	entry [threaded] void run();
 	};
 	chare strassen {  
-	entry strassen(int size, CkFuture f);
-	entry [threaded] void run(int size, CkFuture f);
+	entry strassen(CkFuture f,std::vector<std::vector<int>> A,std::vector<std::vector<int>> B,int size);
+	entry [threaded] void run(CkFuture f,std::vector<std::vector<int>> A,std::vector<std::vector<int>> B,int size);
+	};  
+	chare strassenSub {  
+	entry strassenSub(CkFuture f,std::vector<std::vector<int>> A,
+                 std::vector<std::vector<int>> B, std::vector<std::vector<int>> C, std::vector<std::vector<int>> D,
+                  int size, char partition);
+	entry [threaded] void run(CkFuture f,std::vector<std::vector<int>> A,
+                 std::vector<std::vector<int>> B, std::vector<std::vector<int>> C, std::vector<std::vector<int>> D,
+                  int size, char partition);
+    entry strassenSub(CkFuture f,std::vector<std::vector<int>> A,
+             std::vector<std::vector<int>> B, std::vector<std::vector<int>> C,
+              int size, char partition);
+	entry [threaded] void run(CkFuture f,std::vector<std::vector<int>> A,
+             std::vector<std::vector<int>> B, std::vector<std::vector<int>> C,
+              int size, char partition);
 	};  
 	chare addition {  
 	entry addition(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size);
