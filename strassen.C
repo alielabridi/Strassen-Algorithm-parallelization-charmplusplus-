@@ -1,5 +1,5 @@
 #include "strassen.decl.h"
-#define THRESHOLD 3
+#define THRESHOLD 9
 
 
 class ValueMsg : public CMessage_ValueMsg {
@@ -25,58 +25,42 @@ class Main : public CBase_Main {
             thisProxy.run();
         }
     void run() {
-/*    std::vector<std::vector<int>> A{{1,1,1,1,1,1,1,1},
-                                    {1,1,1,1,1,1,1,1},
-                                    {1,1,1,1,1,1,1,1},
-                                    {1,1,1,1,1,1,1,1},
-                                    {1,1,1,1,1,1,1,1},
-                                    {1,1,1,1,1,1,1,1},
-                                    {1,1,1,1,1,1,1,1},
-                                    {1,1,1,1,1,1,1,1},
-                                    }; 
-    std::vector<std::vector<int>> B{{1,0,0,0,0,0,0,0},
-                                    {0,1,0,0,0,0,0,0},
-                                    {0,0,1,0,0,0,0,0},
-                                    {0,0,0,1,0,0,0,0},
-                                    {0,0,0,0,1,0,0,0},
-                                    {0,0,0,0,0,1,0,0},
-                                    {0,0,0,0,0,0,1,0},
-                                    {0,0,0,0,0,0,0,1},
-                                    };*/
+        int size = 8;
+        std::vector<std::vector<int>> A(size,std::vector<int>(size));
+        std::vector<std::vector<int>> B(size,std::vector<int>(size));
 
 
 
+for (int i = 0; i < size; ++i)
+    for (int j = 0; j < size; ++j){
+    B[i][j] = 0;
+    A[i][j] = 1;
 
-    std::vector<std::vector<int>> A{{1,1,1,1},
-                                    {1,1,1,1},
-                                    {1,1,1,1},
-                                    {1,1,1,1}
-                                    }; 
-    std::vector<std::vector<int>> B{{1,0,0,0},
-                                    {0,1,0,0},
-                                    {0,0,1,0},
-                                    {0,0,0,1}
-                                    }; 
-        //CkPrintf("here2 :\n");
+    }
+
+for (int i = 0; i < size; ++i)
+    B[i][i] = 1;
+
+
 
         CkFuture f = CkCreateFuture();
-        CProxy_strassen::ckNew(f,A,B,4);
+        CProxy_strassen::ckNew(f,A,B,size);
         //CkPrintf("here3 :\n");
 
         ValueMsg * m = (ValueMsg *) CkWaitFuture(f); 
         //CkPrintf("here4 :\n");
 
-        CkPrintf("The resulting matrix is :\n");
+        CkPrintf("FINAL - The resulting matrix is :\n");
 
-        for(int i=0; i<8;i++){
-            for (int j = 0; j < 8; ++j)
+        for(int i=0; i<size;i++){
+            for (int j = 0; j < size; ++j)
             {
                 /* code */
                 CkPrintf("%d ",m->v[i][j]);
             }
                 CkPrintf("\n");
         }
-        CkExit(); delete m;
+        CkExit(); 
     }  
 };
 
@@ -347,11 +331,11 @@ class strassen : public CBase_strassen  {
              for (int i = 0; i < size; i++) {
                 for (int k = 0; k < size; k++) {
                     for (int j = 0; j < size; j++) {
-                        result[i][j] += A[i][k] * B[k][j];
+                        result[i][k] += A[i][j] * B[j][k];
                     }
                 }
             }
-             CkPrintf("computation done by ikjalgorithm\n");        
+            // CkPrintf("computation done by ikjalgorithm\n");        
 
 
         }
@@ -384,64 +368,11 @@ class strassen : public CBase_strassen  {
             //the value of P1
             /*M1 = (A11+A22)(B11+B22)*/
             CkFuture p1Future = CkCreateFuture();
-            CkPrintf("value of a11:\n");
-
-        for(int i=0; i<newSize;i++){
-            for (int j = 0; j < newSize; ++j)
-            {
-                /* code */
-                CkPrintf("%d ",a11[i][j]);
-            }
-                CkPrintf("\n");
-        }
-
-                    CkPrintf("value of a22:\n");
-
-        for(int i=0; i<newSize;i++){
-            for (int j = 0; j < newSize; ++j)
-            {
-                /* code */
-                CkPrintf("%d ",a22[i][j]);
-            }
-                CkPrintf("\n");
-        }
-
-                    CkPrintf("value of b11:\n");
-
-        for(int i=0; i<newSize;i++){
-            for (int j = 0; j < newSize; ++j)
-            {
-                /* code */
-                CkPrintf("%d ",b11[i][j]);
-            }
-                CkPrintf("\n");
-        }
-
-                    CkPrintf("value of b22:\n");
-
-        for(int i=0; i<newSize;i++){
-            for (int j = 0; j < newSize; ++j)
-            {
-                /* code */
-                CkPrintf("%d ",b22[i][j]);
-            }
-                CkPrintf("\n");
-        }
             CProxy_strassenSub::ckNew(p1Future, a11, a22, b11, b22,newSize,'1');
             ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1Future);
             //CkPrintf("here stressen run 5:\n");
 
 
-        CkPrintf("value of m1:\n");
-
-        for(int i=0; i<newSize;i++){
-            for (int j = 0; j < newSize; ++j)
-            {
-                /* code */
-                CkPrintf("%d ",m1->v[i][j]);
-            }
-                CkPrintf("\n");
-        }
 
             /*three addition*/
             //the value of P2
@@ -452,16 +383,6 @@ class strassen : public CBase_strassen  {
             //CkPrintf("here stressen run 6:\n");
 
 
-        CkPrintf("value of m2:\n");
-
-        for(int i=0; i<newSize;i++){
-            for (int j = 0; j < newSize; ++j)
-            {
-                /* code */
-                CkPrintf("%d ",m2->v[i][j]);
-            }
-                CkPrintf("\n");
-        }
 
 
             //the value of P3
@@ -473,16 +394,7 @@ class strassen : public CBase_strassen  {
             //CkPrintf("here stressen run 7:\n");
 
 
-        CkPrintf("value of m3:\n");
 
-        for(int i=0; i<newSize;i++){
-            for (int j = 0; j < newSize; ++j)
-            {
-                /* code */
-                CkPrintf("%d ",m3->v[i][j]);
-            }
-                CkPrintf("\n");
-        }
             //the value of P4
             /*OR partition M4 =A22(B21-B11)*/
             CkFuture p4Future = CkCreateFuture();
@@ -490,16 +402,7 @@ class strassen : public CBase_strassen  {
             ValueMsg * m4 = (ValueMsg *) CkWaitFuture(p4Future);
             //CkPrintf("here stressen run 8:\n");
 
-        CkPrintf("value of m4:\n");
 
-        for(int i=0; i<newSize;i++){
-            for (int j = 0; j < newSize; ++j)
-            {
-                /* code */
-                CkPrintf("%d ",m4->v[i][j]);
-            }
-                CkPrintf("\n");
-        }
 
             //the value of P5
             /*OR partition M5 =(A11+A12)B22*/
@@ -509,16 +412,6 @@ class strassen : public CBase_strassen  {
             //CkPrintf("here stressen run 9:\n");
 
 
-        CkPrintf("value of m5:\n");
-
-        for(int i=0; i<newSize;i++){
-            for (int j = 0; j < newSize; ++j)
-            {
-                /* code */
-                CkPrintf("%d ",m5->v[i][j]);
-            }
-                CkPrintf("\n");
-        }
             //the value of P6
             /*partition M6 = (A21-A11)(B11+B12)*/
             CkFuture p6Future = CkCreateFuture();
@@ -527,16 +420,6 @@ class strassen : public CBase_strassen  {
             //CkPrintf("here stressen run 10:\n");
 
 
-        CkPrintf("value of m6:\n");
-
-        for(int i=0; i<newSize;i++){
-            for (int j = 0; j < newSize; ++j)
-            {
-                /* code */
-                CkPrintf("%d ",m6->v[i][j]);
-            }
-                CkPrintf("\n");
-        }
             //the value of P7
             /*OR partition M7 = (A12-A22)(B21+B22)*/
             CkFuture p7Future = CkCreateFuture();
@@ -545,16 +428,6 @@ class strassen : public CBase_strassen  {
             //CkPrintf("here stressen run 11:\n");
 
 
-        CkPrintf("value of m7:\n");
-
-        for(int i=0; i<newSize;i++){
-            for (int j = 0; j < newSize; ++j)
-            {
-                /* code */
-                CkPrintf("%d ",m1->v[i][j]);
-            }
-                CkPrintf("\n");
-        }
 
             /*do we need another chare for the C1,C2,C3,C4 ?*/
             /*compute C11 = M1+M4-M5+M7*/
@@ -567,7 +440,13 @@ class strassen : public CBase_strassen  {
                 } 
             }
             //CkPrintf("here stressen run 12:\n");
-
+            delete m1;
+            delete m2;
+            delete m3;
+            delete m4;
+            delete m5;
+            delete m6;
+            delete m7;
 
 
 
@@ -596,35 +475,18 @@ class strassen : public CBase_strassen  {
             }
             //CkPrintf("here stressen run 13:\n");
 
-        CkPrintf("computation done by strassen\n");        
         }
         ValueMsg *m = new ValueMsg(size);
             //CkPrintf("here stressen run 14:\n");
 
 
-        CkPrintf("A: :\n");
 
-        for(int i=0; i<size;i++){
+        for(int i=0; i<size;i++)
             for (int j = 0; j < size; ++j)
-            {
-                /* code */
-                CkPrintf("%d ",A[i][j]);
-            }
-                CkPrintf("\n");
-        }
-        CkPrintf("B: :\n");
+                m->v[i][j] = result[i][j];
 
-        for(int i=0; i<size;i++){
-            for (int j = 0; j < size; ++j)
-            {
-                /* code */
-                CkPrintf("%d ",B[i][j]);
-            }
-                CkPrintf("\n");
-        }
-
-
-        CkPrintf("Result:\n");
+        //m->v = result;
+        CkPrintf("The resulting matrix is :\n");
 
         for(int i=0; i<size;i++){
             for (int j = 0; j < size; ++j)
@@ -634,23 +496,6 @@ class strassen : public CBase_strassen  {
             }
                 CkPrintf("\n");
         }
-        for(int i=0; i<size;i++)
-            for (int j = 0; j < size; ++j)
-                m->v[i][j] = result[i][j];
-
-        //m->v = result;
-
-                CkPrintf("and inside the message for result:\n");
-
-        for(int i=0; i<size;i++){
-            for (int j = 0; j < size; ++j)
-            {
-                /* code */
-                CkPrintf("%d ",m->v[i][j]);
-            }
-                CkPrintf("\n");
-        }
-
         CkSendToFuture(f, m);
             //CkPrintf("here stressen run 15:\n");
 
