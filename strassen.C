@@ -205,8 +205,6 @@ public:
 
     }
 
-
-
 };
 class strassen : public CBase_strassen  {
     private:  int result, count, IamRoot;  CProxy_strassen parent;
@@ -234,11 +232,6 @@ class strassen : public CBase_strassen  {
     }*/
     void run(CkFuture f,std::vector<std::vector<int>> A,std::vector<std::vector<int>> B,int size) {
 
-        //if (n< THRESHOLD)
-        if(size < THRESHOLD);
-            //result = ikjalgorithm(size);
-        else {  
-            //declaration of submatrices needed here
             int newSize = size/2;
             std::vector<int> inner (newSize);
             std::vector< std::vector<int> > 
@@ -246,7 +239,13 @@ class strassen : public CBase_strassen  {
             b11(newSize,inner), b12(newSize,inner), b21(newSize,inner), b22(newSize,inner),
             c11(newSize,inner), c12(newSize,inner), c21(newSize,inner), c22(newSize,inner),
             p1(newSize,inner), p2(newSize,inner), p3(newSize,inner), p4(newSize,inner), 
-            p5(newSize,inner), p6(newSize,inner), p7(newSize,inner),
+            p5(newSize,inner), p6(newSize,inner), p7(newSize,inner),result(newSize,inner);
+
+        //if (n< THRESHOLD)
+        if(size < THRESHOLD);
+            result = ikjalgorithm(A,B,size);
+        else {  
+            //declaration of submatrices needed here
             
             // call for future (p1,p2....p7) with future then recolt the result
 
@@ -255,20 +254,40 @@ class strassen : public CBase_strassen  {
             /*four addition*/
             //the value of P1
             CkFuture p1Future = CkCreateFuture();
-            CProxy_strassenSub::ckNew(p1Future, a11, a22, b11, b22);
+            CProxy_strassenSub::ckNew(p1Future, a11, a22, b11, b22,'1');
             ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1Future);
 
             /*three addition*/
             //the value of P2
             CkFuture p2Future = CkCreateFuture();
-            CProxy_strassenSub::ckNew(p2Future, a21, a22, b11);
+            CProxy_strassenSub::ckNew(p2Future, a21, a22, b11,'2');
             ValueMsg * m2 = (ValueMsg *) CkWaitFuture(p2Future);
 
-            /*three addition*/
+
+            //the value of P3
+            CkFuture p3Future = CkCreateFuture();
+            CProxy_strassenSub::ckNew(p3Future, a11, b12, b22,'3');
+            ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p3Future);
+
+            //the value of P4
+            CkFuture p4Future = CkCreateFuture();
+            CProxy_strassenSub::ckNew(p4Future, a22, b21, b11,'4');
+            ValueMsg * m4 = (ValueMsg *) CkWaitFuture(p4Future);
+
             //the value of P5
             CkFuture p5Future = CkCreateFuture();
-            CProxy_strassenSub::ckNew(p5Future, a11, a12, b22);
+            CProxy_strassenSub::ckNew(p5Future, a11, a12, b22,'5');
             ValueMsg * m5 = (ValueMsg *) CkWaitFuture(p5Future);
+
+            //the value of P6
+            CkFuture p6Future = CkCreateFuture();
+            CProxy_strassenSub::ckNew(p6Future, a22, b21, b11,'6');
+            ValueMsg * m6 = (ValueMsg *) CkWaitFuture(p6Future);
+
+            //the value of P7
+            CkFuture p7Future = CkCreateFuture();
+            CProxy_strassenSub::ckNew(p7Future, a12, a22, b21,b22,'7');
+            ValueMsg * m7 = (ValueMsg *) CkWaitFuture(p7Future);
 
 
             //at this points we should wait for p1,p2,p3... to compute c11,c22,,c12,c21
