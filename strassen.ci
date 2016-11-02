@@ -2,7 +2,7 @@ mainmodule strassen {
 message ValueMsg;
 	mainchare Main {  
 	entry Main(CkArgMsg *m);
-	entry [threaded] void run();
+	entry [threaded] void run(int size_);
 	};
 	chare strassen {  
 	entry strassen(CkFuture f,std::vector<std::vector<int>> A,std::vector<std::vector<int>> B,int size);
