@@ -1,6 +1,7 @@
 #include "strassen.decl.h"
 #define THRESHOLD 3
 
+
 class ValueMsg : public CMessage_ValueMsg {
 public:
     std::vector<std::vector<int> > v;
@@ -127,16 +128,16 @@ public:
         //i could spawn all the additions needed here   
         CProxy_addition::ckNew(p1add1,A,B,size);//param not matching yet just a pseudo code
         CProxy_addition::ckNew(p1add2,C,D,size);//param not matching yet just a pseudo code
-        ValueMsg *m1 = new ValueMsg(size);
-        ValueMsg *m2 = new ValueMsg(size);
+        //ValueMsg *m1 = new ValueMsg(size);
+        //ValueMsg *m2 = new ValueMsg(size);
         ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1add1);
         ValueMsg * m2 = (ValueMsg *) CkWaitFuture(p1add2);
         CkFuture p1 = CkCreateFuture();
-        CProxy_strassen::ckNew(p1,m1->v,m2->v, f1); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
+        CProxy_strassen::ckNew(p1,m1->v,m2->v,size); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
         //i could free m1 and m2 at this point
         delete m1;
         delete m2;
-        ValueMsg *m3 = new ValueMsg(size);
+        //ValueMsg *m3 = new ValueMsg(size);
         ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p1);
         CkSendToFuture(f, m3);
         //p1 = m3->v; //returned product of the two summation
@@ -151,18 +152,18 @@ public:
         CkFuture padd1 = CkCreateFuture(); 
         CkFuture psub2 = CkCreateFuture(); 
         //i could spawn all the additions needed here   
-        CProxy_substration::ckNew(padd1,A,B,size);//param not matching yet just a pseudo code
+        CProxy_substraction::ckNew(padd1,A,B,size);//param not matching yet just a pseudo code
         CProxy_addition::ckNew(psub2,C,D,size);//param not matching yet just a pseudo code
-        ValueMsg *m1 = new ValueMsg(size);
-        ValueMsg *m2 = new ValueMsg(size);
+        //ValueMsg *m1 = new ValueMsg(size);
+        //ValueMsg *m2 = new ValueMsg(size);
         ValueMsg * m1 = (ValueMsg *) CkWaitFuture(padd1);
         ValueMsg * m2 = (ValueMsg *) CkWaitFuture(psub2);
         CkFuture p = CkCreateFuture();
-        CProxy_strassen::ckNew(p,m1->v,m2->v, f1); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
+        CProxy_strassen::ckNew(p,m1->v,m2->v, size); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
         //i could free m1 and m2 at this point
         delete m1;
         delete m2;
-        ValueMsg *m3 = new ValueMsg(size);
+        //ValueMsg *m3 = new ValueMsg(size);
         ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p);
         CkSendToFuture(f, m3);
         //p1 = m3->v; //returned product of the two summation
@@ -194,13 +195,13 @@ public:
         CkFuture padd1 = CkCreateFuture(); 
         //i could spawn all the additions needed here   
         CProxy_addition::ckNew(padd1,A,B,size);//param not matching yet just a pseudo code
-        ValueMsg *m1 = new ValueMsg(size);
+        //ValueMsg *m1 = new ValueMsg(size);
         ValueMsg * m1 = (ValueMsg *) CkWaitFuture(padd1);
         CkFuture p = CkCreateFuture();
-        CProxy_strassen::ckNew(p,m1->v,C, f1); 
+        CProxy_strassen::ckNew(p,m1->v,C, size); 
         //i could free m1 and m2 at this point
         delete m1;
-        ValueMsg *m3 = new ValueMsg(size);
+        //ValueMsg *m3 = new ValueMsg(size);
         ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p);
         CkSendToFuture(f, m3);
         //p1 = m3->v; //returned product of the two summation
@@ -214,13 +215,13 @@ public:
         CkFuture psub1 = CkCreateFuture(); 
         //i could spawn all the additions needed here   
         CProxy_addition::ckNew(psub1,B,C,size);//param not matching yet just a pseudo code
-        ValueMsg *m1 = new ValueMsg(size);
+        //ValueMsg *m1 = new ValueMsg(size);
         ValueMsg * m1 = (ValueMsg *) CkWaitFuture(psub1);
         CkFuture p = CkCreateFuture();
-        CProxy_strassen::ckNew(p,m1->v,A, f1); 
+        CProxy_strassen::ckNew(p,m1->v,A, size); 
         //i could free m1 and m2 at this point
         delete m1;
-        ValueMsg *m3 = new ValueMsg(size);
+        //ValueMsg *m3 = new ValueMsg(size);
         ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p);
         CkSendToFuture(f, m3);
         //p1 = m3->v; //returned product of the two summation
@@ -240,18 +241,7 @@ class strassen : public CBase_strassen  {
     strassen(CkMigrateMessage *m) {};
     strassen(CkFuture f,std::vector<std::vector<int>> A,std::vector<std::vector<int>> B,int size){ thisProxy.run(f,A,B,size); }
 
-    vector< vector<int> > ikjalgorithm(vector< vector<int> > A, 
-                                   vector< vector<int> > B,
-                                   , int size) {
-        for (int i = 0; i < size; i++) {
-            for (int k = 0; k < size; k++) {
-                for (int j = 0; j < size; j++) {
-                    C[i][j] += A[i][k] * B[k][j];
-                }
-            }
-        }
-        return C;
-    }
+
     void run(CkFuture f,std::vector<std::vector<int>> A,std::vector<std::vector<int>> B,int size) {
 
             int newSize = size/2;
@@ -267,9 +257,26 @@ class strassen : public CBase_strassen  {
             std::vector<int> innerResult (size);
             std::vector< std::vector<int> > result(size,inner);
 
+
+        std::vector< std::vector<int> > ikjalgorithm(std::vector< std::vector<int> > A, 
+                   std::vector< std::vector<int> > B,
+                   int size) {
+
+            for (int i = 0; i < size; i++) {
+                for (int k = 0; k < size; k++) {
+                    for (int j = 0; j < size; j++) {
+                        C[i][j] += A[i][k] * B[k][j];
+                    }
+                }
+            }
+            return C;
+        }
+
+
         //if (n< THRESHOLD)
-        if(size < THRESHOLD);
+        if(size < THRESHOLD){
             result = ikjalgorithm(A,B,size);
+        }
         else {
 
         //dividing the matrices in 4 sub-matrices:
@@ -341,12 +348,12 @@ class strassen : public CBase_strassen  {
 
             /*do we need another chare for the C1,C2,C3,C4 ?*/
             /*compute C11 = M1+M4-M5+M7*/
-            for (int i = 0; i < m2; i++)
-                for (int j = 0; j < n2; j++) {
-                    C11[i][j] = m1->v[i][j] + m4->v[i][j] - m5->v[i][j] + m7->v[i][j];
-                    C12[i][j] = m3->[i][j] + m5->[i][j];
-                    C21[i][j] = m2->[i][j] + m4->[i][j];
-                    C22[i][j] = m1->[i][j] - m2->[i][j] + m3->[i][j] + m6->[i][j];
+            for (int i = 0; i < newSize; i++)
+                for (int j = 0; j < newSize; j++) {
+                    c11[i][j] = m1->v[i][j] + m4->v[i][j] - m5->v[i][j] + m7->v[i][j];
+                    c12[i][j] = m3->v[i][j] + m5->v[i][j];
+                    c21[i][j] = m2->v[i][j] + m4->v[i][j];
+                    c22[i][j] = m1->v[i][j] - m2->v[i][j] + m3->v[i][j] + m6->v[i][j];
                 }
 
 
@@ -366,8 +373,8 @@ class strassen : public CBase_strassen  {
             delete m2;*/
 
              // Grouping the results obtained in a single matrix:
-            for (i = 0; i < newSize ; i++) {
-                for (j = 0 ; j < newSize ; j++) {
+            for (int i = 0; i < newSize ; i++) {
+                for (int j = 0 ; j < newSize ; j++) {
                     result[i][j] = c11[i][j];
                     result[i][j + newSize] = c12[i][j];
                     result[i + newSize][j] = c21[i][j];
