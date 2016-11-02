@@ -1,5 +1,5 @@
 #include "strassen.decl.h"
-#define THRESHOLD 9
+#define THRESHOLD 3
 
 
 class ValueMsg : public CMessage_ValueMsg {
@@ -21,25 +21,28 @@ class Main : public CBase_Main {
             }
             int size = atoi(m->argv[1]);  */
         //CkPrintf("here1 :\n");
-
-            thisProxy.run();
+            int size;
+            if(m->argc == 2)size = atoi(m->argv[1]);
+            else size = 8;
+            thisProxy.run(size);
         }
-    void run() {
-        int size = 8;
+    void run(int size_) {
+        int size = size_;
+
         std::vector<std::vector<int>> A(size,std::vector<int>(size));
         std::vector<std::vector<int>> B(size,std::vector<int>(size));
 
 
 
-for (int i = 0; i < size; ++i)
-    for (int j = 0; j < size; ++j){
-    B[i][j] = 0;
-    A[i][j] = 1;
+        for (int i = 0; i < size; ++i)
+            for (int j = 0; j < size; ++j){
+            B[i][j] = 0;
+            A[i][j] = 1;
 
-    }
+            }
 
-for (int i = 0; i < size; ++i)
-    B[i][i] = 1;
+        for (int i = 0; i < size; ++i)
+            B[i][i] = 1;
 
 
 
@@ -90,8 +93,10 @@ class addition :public CBase_addition{
         /*wrap the resulting addition in a message of size and send it back to future*/
         ValueMsg *m = new ValueMsg(size);
         //CkPrintf("addition run 3:\n");
+        for (int i = 0; i < size; ++i)
+            for (int j = 0; j < size; ++j)
+                 m->v[i][j] = C[i][j];
 
-        m->v = C;
         //CkPrintf("addition run 4:\n");
 
         CkSendToFuture(f, m);
@@ -119,7 +124,9 @@ class substraction :public CBase_substraction{
         }
         /*wrap the resulting substraction in a message of size and send it back to future*/
         ValueMsg *m = new ValueMsg(size);
-        m->v = C;
+        for (int i = 0; i < size; ++i)
+            for (int j = 0; j < size; ++j)
+                 m->v[i][j] = C[i][j];
         CkSendToFuture(f, m);
     }
 };
@@ -303,7 +310,7 @@ class strassen : public CBase_strassen  {
             //CkPrintf("here stressen run 2:\n");
 
             std::vector<int> innerResult (size);
-            std::vector< std::vector<int> > result(size,inner);
+            std::vector< std::vector<int> > result(size,innerResult);
             //CkPrintf("here stressen run 3:\n");
 
 /*
@@ -324,12 +331,9 @@ class strassen : public CBase_strassen  {
 
         //if (n< THRESHOLD)
         if(size < THRESHOLD){
-            for (int i = 0; i < size; i++) 
-                for (int k = 0; k < size; k++)
-                    result[i][k] = 0;
-
              for (int i = 0; i < size; i++) {
                 for (int k = 0; k < size; k++) {
+                    result[i][k] = 0;
                     for (int j = 0; j < size; j++) {
                         result[i][k] += A[i][j] * B[j][k];
                     }
