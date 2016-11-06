@@ -5,7 +5,13 @@ class ValueMsg : public CMessage_ValueMsg {
 public:
     //std::vector<std::vector<int> > v;
     //std::vector<std::vector<int>> v(256,std::vector<int>(256));
-    int v[256][256];
+    int **v;
+    //int v[256][256];
+    ValueMsg(int size){
+        v = new int*[size];
+        for (int i = 0; i < size; ++i)
+            v[i] = new int[size];
+    }
 
     //i found a solution to allocate a non fixed sized without segment fault
     //ValueMsg(int size):v(size, std::vector<int>(size)){}
@@ -95,7 +101,7 @@ class addition :public CBase_addition{
         //CkPrintf("addition run 2:\n");
 
         /*wrap the resulting addition in a message of size and send it back to future*/
-        ValueMsg *m = new ValueMsg();
+        ValueMsg *m = new ValueMsg(size);
         //CkPrintf("addition run 3:\n");
         for (int i = 0; i < size; ++i)
             for (int j = 0; j < size; ++j)
@@ -127,7 +133,7 @@ class substraction :public CBase_substraction{
             }
         }
         /*wrap the resulting substraction in a message of size and send it back to future*/
-        ValueMsg *m = new ValueMsg();
+        ValueMsg *m = new ValueMsg(size);
         for (int i = 0; i < size; ++i)
             for (int j = 0; j < size; ++j)
                  m->v[i][j] = C.at(i).at(j);
@@ -486,18 +492,7 @@ class strassen : public CBase_strassen  {
 
 
             //at this points we should wait for p1,p2,p3... to compute c11,c22,,c12,c21
-            //combine it into a big C and return it in the form of a msg
-
-            //to not take into consideration just a chunk of code taken from fib
-
-/*            CkFuture f2 = CkCreateFuture();
-            CProxy_strassen::ckNew(size-1, f1);
-            CProxy_strassen::ckNew(size-2, f2);
-            ValueMsg * m1 = (ValueMsg *) CkWaitFuture(f1);
-            ValueMsg * m2 = (ValueMsg *) CkWaitFuture(f2);
-            result = m1->v[0][0] + m2->v[0][0];
-            delete m1; 
-            delete m2;*/
+            //combine it into a big C and return it in the form of a msgs
 
              // Grouping the results obtained in a single matrix:
             for (int i = 0; i < newSize ; i++) {
@@ -511,7 +506,7 @@ class strassen : public CBase_strassen  {
             //CkPrintf("here stressen run 13:\n");
 
         }
-        ValueMsg *m = new ValueMsg();
+        ValueMsg *m = new ValueMsg(size);
             //CkPrintf("here stressen run 14:\n");
 
 
