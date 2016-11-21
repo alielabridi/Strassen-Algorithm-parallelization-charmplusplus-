@@ -28,13 +28,6 @@ class Main : public CBase_Main {
     public: 
         Main(CkMigrateMessage *m) {};
         Main(CkArgMsg * m) { 
-/*            if(m->argc < 2) {
-                //CmiAbort("./strassen N.");
-                //cout << "test";
-                CkExit();
-            }
-            int size = atoi(m->argv[1]);  */
-        //if(VERBOSE)CkPrintf("here1 :\n");
             int size;
             if(m->argc > 1)size = atoi(m->argv[1]);
             else size = 8;
@@ -49,36 +42,49 @@ class Main : public CBase_Main {
         std::vector<std::vector<int>> B(size,std::vector<int>(size));
 
 
-
+        /*generate identity matrice of size input*/
         for (int i = 0; i < size; ++i)
             for (int j = 0; j < size; ++j){
-            B.at(i).at(j) = 0;
-            A.at(i).at(j) = 1;
-
+                B.at(i).at(j) = 0;
+                A.at(i).at(j) = 1;
             }
-
+        /*generate identity matrice of one's of size input*/
         for (int i = 0; i < size; ++i)
             B.at(i).at(i) = 1;
 
-
-
+        /*execution of parralelization*/
+        starttimer = CkWallTimer();
         CkFuture f = CkCreateFuture();
         CProxy_strassen::ckNew(f,A,B,size);
-        //if(VERBOSE)CkPrintf("here3 :\n");
-
         ValueMsg * m = (ValueMsg *) CkWaitFuture(f); 
-        //if(VERBOSE)CkPrintf("here4 :\n");
+        endtimer = CkWallTimer();
 
-        CkPrintf("FINAL - The resulting matrix is :\n");
+
+   
+        if(VERBOSE)CkPrintf("FINAL - The resulting matrix is :\n");
 
         for(int i=0; i<size;i++){
             for (int j = 0; j < size; ++j)
             {
                 /* code */
-                CkPrintf("%d ",m->v[i][j]);
+                if(VERBOSE)CkPrintf("%d ",m->v[i][j]);
             }
-                CkPrintf("\n");
+                if(VERBOSE)CkPrintf("\n");
         }
+
+        /*checking result if correct*/
+        bool correctness = true;
+        for (int i = 0; i < size; ++i)
+            for (int j = 0; j < size; ++j)
+                if(m->v[i][j] != B[i][j]) correctness = false;
+        if(correctness)
+            CkPrintf("Correct: matrix size = %d, Threshold = %d, Exec time = %lf sec \n",  size, THRESHOLD,endtimer-startTime);
+        else
+            CkPrintf("Incorrect: matrix size = %d, Threshold = %d, Exec time = %lf sec \n",  size, THRESHOLD,endtimer-startTime);
+               
+            
+        
+
         CkExit(); 
     }  
 };
