@@ -1,6 +1,6 @@
 #include "strassen.decl.h"
 int THRESHOLD = 3;
-#define VERBOSE 1
+#define VERBOSE 0
 
 /*include in the discussion why choosing arrays vs vector
         array more primitive => takes only what it needs 
@@ -302,8 +302,8 @@ public:
         //if(VERBOSE)CkPrintf("here stressen SUB run 6:\n");
 
         //i could free m1 and m2 at this point
-        delete m1;
-        delete m2;
+        //delete m1;
+        //delete m2;
         //if(VERBOSE)CkPrintf("here stressen SUB run 7:\n");
 
         //ValueMsg *m3 = new ValueMsg(size);
@@ -357,8 +357,8 @@ public:
         //CProxy_strassen::ckNew(p, m1->v,m2->v, strassenSubMsgArg->size); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
         CProxy_strassen::ckNew(strassenMsgArg); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
         //i could free m1 and m2 at this point
-        delete m1;
-        delete m2;
+        //delete m1;
+        //delete m2;
         //ValueMsg *m3 = new ValueMsg(size);
         ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p);
         CkSendToFuture(strassenSubMsgArg->f, m3);
@@ -411,7 +411,7 @@ public:
         //CProxy_strassen::ckNew(p,m1->v,C, strassenSubMsgArg->size); 
         CProxy_strassen::ckNew(strassenMsgArg); 
         //i could free m1 and m2 at this point
-        delete m1;
+        //delete m1;
         //ValueMsg *m3 = new ValueMsg(size);
         ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p);
         CkSendToFuture(strassenSubMsgArg->f, m3);
@@ -459,7 +459,7 @@ public:
         CProxy_strassen::ckNew(strassenMsgArg); 
         //CProxy_strassen::ckNew(p,A,m1->v, strassenSubMsgArg->size); 
         //i could free m1 and m2 at this point
-        delete m1;
+        //delete m1;
         //ValueMsg *m3 = new ValueMsg(size);
         ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p);
         CkSendToFuture(strassenSubMsgArg->f, m3);
@@ -794,20 +794,16 @@ class strassen : public CBase_strassen  {
                     m->v[i][j + newSize] = m3->v[i][j] + m5->v[i][j];
                     m->v[i + newSize][j] = m2->v[i][j] + m4->v[i][j];
                     m->v[i + newSize][j + newSize] = m1->v[i][j] - m2->v[i][j] + m3->v[i][j] + m6->v[i][j];
-                     CkPrintf("%d", m1->v[i][j] + m4->v[i][j] - m5->v[i][j] + m7->v[i][j]);
-                    CkPrintf("%d", m3->v[i][j] + m5->v[i][j]);
-                    CkPrintf("%d", m2->v[i][j] + m4->v[i][j]);
-                    CkPrintf("%d ", m1->v[i][j] - m2->v[i][j] + m3->v[i][j] + m6->v[i][j]);
                 } 
             }
             //if(VERBOSE)CkPrintf("here stressen run 12:\n");
-            delete m1;
-            delete m2;
-            delete m3;
-            delete m4;
-            delete m5;
-            delete m6;
-            delete m7;
+            //delete m1;
+            //delete m2;
+            //delete m3;
+            //delete m4;
+            //delete m5;
+            //delete m6;
+            //delete m7;
 
 
 
@@ -823,16 +819,6 @@ class strassen : public CBase_strassen  {
             }*/
             //if(VERBOSE)CkPrintf("here stressen run 13:\n");
 
-        if(VERBOSE)CkPrintf("The resulting matrix is :\n");
-
-        for(int i=0; i<2*newSize;i++){
-            for (int j = 0; j < 2*newSize; ++j)
-            {
-                /* code */
-                if(VERBOSE)CkPrintf("%d ",m->v[i][j]);
-            }
-                if(VERBOSE)CkPrintf("\n");
-        }
 
         }
             //if(VERBOSE)CkPrintf("here stressen run 14:\n");
