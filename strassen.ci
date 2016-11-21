@@ -10,6 +10,8 @@ message StrassenMsgArg;
 	};
 
 	chare strassen {  
+	entry strassen(vector<vector<int>> A, vector<vector<int>> B,int size,CkFuture f);
+	entry [threaded] void run(vector<vector<int>> A, vector<vector<int>> B,int size,CkFuture f);
 	entry strassen(StrassenMsgArg*);
 	entry [threaded] void run(StrassenMsgArg*);
 	};  
