@@ -10,7 +10,7 @@ int THRESHOLD = 3;
 class ValueMsg : public CMessage_ValueMsg {
 public:
     //std::vector<std::vector<int> > v;
-    //std::vector<std::vector<int>> v(256,std::vector<int>(256));
+    //int v(256,std::vector<int>(256));
     int **v;
     //int v[256][256];
     ValueMsg(int size){
@@ -24,6 +24,9 @@ public:
     //for the time being i am going to stick to array as vectors produce segment fault
     //int v[4][4];
  };
+
+
+
 class Main : public CBase_Main {
     public: 
         Main(CkMigrateMessage *m) {};
@@ -38,26 +41,26 @@ class Main : public CBase_Main {
     void run(int size_) {
         int size = size_;
 
-        std::vector<std::vector<int>> A(size,std::vector<int>(size));
-        std::vector<std::vector<int>> B(size,std::vector<int>(size));
+        int A[size][size];
+        int B[size][size];
 
 
         /*generate identity matrice of size input*/
         for (int i = 0; i < size; ++i)
             for (int j = 0; j < size; ++j){
-                B.at(i).at(j) = 0;
-                A.at(i).at(j) = 1;
+                B[i][j] = 0;
+                A[i][j] = 1;
             }
         /*generate identity matrice of one's of size input*/
         for (int i = 0; i < size; ++i)
-            B.at(i).at(i) = 1;
+            B[i][i] = 1;
 
         /*execution of parralelization*/
-        starttimer = CkWallTimer();
+        double starttimer = CkWallTimer();
         CkFuture f = CkCreateFuture();
         CProxy_strassen::ckNew(f,A,B,size);
         ValueMsg * m = (ValueMsg *) CkWaitFuture(f); 
-        endtimer = CkWallTimer();
+        double endtimer = CkWallTimer();
 
 
    
@@ -78,9 +81,9 @@ class Main : public CBase_Main {
             for (int j = 0; j < size; ++j)
                 if(m->v[i][j] != B[i][j]) correctness = false;
         if(correctness)
-            CkPrintf("Correct: matrix size = %d, Threshold = %d, Exec time = %lf sec \n",  size, THRESHOLD,endtimer-startTime);
+            CkPrintf("Correct: matrix size = %d, Threshold = %d, Exec time = %lf sec \n",  size, THRESHOLD,endtimer-starttimer);
         else
-            CkPrintf("Incorrect: matrix size = %d, Threshold = %d, Exec time = %lf sec \n",  size, THRESHOLD,endtimer-startTime);
+            CkPrintf("Incorrect: matrix size = %d, Threshold = %d, Exec time = %lf sec \n",  size, THRESHOLD,endtimer-starttimer);
                
             
         
@@ -92,34 +95,21 @@ class Main : public CBase_Main {
 class addition :public CBase_addition{
     public:
     addition(CkMigrateMessage *m) {};
-    addition(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size){
+    addition(CkFuture f,int** A, int** B, int size){
         thisProxy.run(f,A,B,size);
     }
-    void run(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size){
-        //if(VERBOSE)CkPrintf("addition run 1:\n");
+    void run(CkFuture f,int** A, int** B, int size){
 
-        //std::vector<std::vector<int>> C;
-        std::vector<std::vector<int>> C(size,std::vector<int>(size));
-
-        //if(VERBOSE)CkPrintf("addition run 1-1:\n");
         ValueMsg *m = new ValueMsg(size);
 
         for (int i = 0; i < size; ++i)
         {
             for (int j = 0; j < size; ++j)
             {
-                 m->v[i][j] = A.at(i).at(j) + B.at(i).at(j);
+                 m->v[i][j] = A[i][j] + B[i][j];
             }
         }
-        //if(VERBOSE)CkPrintf("addition run 2:\n");
-
-        /*wrap the resulting addition in a message of size and send it back to future*/
-        //if(VERBOSE)CkPrintf("addition run 3:\n");
-/*        for (int i = 0; i < size; ++i)
-            for (int j = 0; j < size; ++j)
-                 m->v[i][j] = C.at(i).at(j);*/
-
-        //if(VERBOSE)CkPrintf("addition run 4:\n");
+        /*wrap the resulting substraction in a message of size and send it back to future*/
 
         CkSendToFuture(f, m);
     }
@@ -130,25 +120,21 @@ class addition :public CBase_addition{
 class substraction :public CBase_substraction{
     public:
     substraction(CkMigrateMessage *m) {};
-    substraction(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size){
+    substraction(CkFuture f,int** A, int** B, int size){
         thisProxy.run(f,A,B,size);
     }
-    void run(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size){
-        //std::vector<std::vector<int>> C;
-        std::vector<std::vector<int>> C(size,std::vector<int>(size));
+    void run(CkFuture f,int** A, int** B, int size){
         ValueMsg *m = new ValueMsg(size);
 
         for (int i = 0; i < size; ++i)
         {
             for (int j = 0; j < size; ++j)
             {
-                 m->v[i][j] = A.at(i).at(j) - B.at(i).at(j);
+                 m->v[i][j] = A[i][j] - B[i][j];
             }
         }
         /*wrap the resulting substraction in a message of size and send it back to future*/
-/*        for (int i = 0; i < size; ++i)
-            for (int j = 0; j < size; ++j)
-                 m->v[i][j] = C.at(i).at(j);*/
+
         CkSendToFuture(f, m);
     }
 };
@@ -159,13 +145,13 @@ public:
     //overload the function to take three matrices or four
     //how should I adapt the class to implement for substraction
     /*four additions*/
-    strassenSub(CkFuture f,std::vector<std::vector<int>> A,
-                 std::vector<std::vector<int>> B, std::vector<std::vector<int>> C, std::vector<std::vector<int>> D,
+    strassenSub(CkFuture f,int** A,
+                 int** B, int** C, int** D,
                   int size, char partition){ thisProxy.run(f,A,B,C,D,size,partition); }
 
 
-    void run(CkFuture f,std::vector<std::vector<int>> A,
-                 std::vector<std::vector<int>> B, std::vector<std::vector<int>> C, std::vector<std::vector<int>> D,
+    void run(CkFuture f,int** A,
+                 int** B, int** C, int** D,
                   int size, char partition){
     //do the addition/substraction, and wait for for the result then call on it the bigger strassen chare
     //if needed a big multiplication
@@ -188,30 +174,13 @@ public:
         ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1add1);
         ValueMsg * m2 = (ValueMsg *) CkWaitFuture(p1add2);
 
-      /*  if(VERBOSE)CkPrintf("value of a11+a22:\n");
 
-        for(int i=0; i<newSize;i++){
-            for (int j = 0; j < newSize; ++j)
-            {
-                if(VERBOSE)CkPrintf("%d ",a11->v[i][j]);
-            }
-                if(VERBOSE)CkPrintf("\n");
-        }*/
-        //if(VERBOSE)CkPrintf("here stressen SUB run 4:\n");
 
         CkFuture p1 = CkCreateFuture();
         //if(VERBOSE)CkPrintf("here stressen SUB run 5:\n");
-        std::vector<std::vector<int>> X(size,std::vector<int>(size));
-        std::vector<std::vector<int>> Y(size,std::vector<int>(size));
-        for (int i = 0; i < size; ++i)
-        {
-            for (int j = 0; j < size; ++j)
-            {
-                X[i][j] = m1->v[i][j];
-                Y[i][j] = m2->v[i][j];
-            }
-        }
-        CProxy_strassen::ckNew(p1,X,Y,size); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
+
+
+        CProxy_strassen::ckNew(p1,m1->v,m2->v,size); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
         //if(VERBOSE)CkPrintf("here stressen SUB run 6:\n");
 
         //i could free m1 and m2 at this point
@@ -243,17 +212,7 @@ public:
         ValueMsg * m1 = (ValueMsg *) CkWaitFuture(psub1);
         ValueMsg * m2 = (ValueMsg *) CkWaitFuture(padd2);
         CkFuture p = CkCreateFuture();
-        std::vector<std::vector<int>> X(size,std::vector<int>(size));
-        std::vector<std::vector<int>> Y(size,std::vector<int>(size));
-        for (int i = 0; i < size; ++i)
-        {
-            for (int j = 0; j < size; ++j)
-            {
-                X[i][j] = m1->v[i][j];
-                Y[i][j] = m2->v[i][j];
-            }
-        }
-        CProxy_strassen::ckNew(p,X,Y, size); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
+        CProxy_strassen::ckNew(p, m1->v,m2->v, size); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
         //i could free m1 and m2 at this point
         delete m1;
         delete m2;
@@ -271,13 +230,13 @@ public:
 
 
      /*three addition*/
-    strassenSub(CkFuture f,std::vector<std::vector<int>> A,
-             std::vector<std::vector<int>> B, std::vector<std::vector<int>> C,
+    strassenSub(CkFuture f,int** A,
+             int** B, int** C,
               int size, char partition){ thisProxy.run(f,A,B,C,size,partition); }
 
 
-    void run(CkFuture f,std::vector<std::vector<int>> A,
-                 std::vector<std::vector<int>> B, std::vector<std::vector<int>> C,
+    void run(CkFuture f,int** A,
+                 int** B, int** C,
                   int size,char partition){
 
     //do the addition/substraction, and wait for for the result then call on it the bigger strassen chare
@@ -292,15 +251,15 @@ public:
         //ValueMsg *m1 = new ValueMsg(size);
         ValueMsg * m1 = (ValueMsg *) CkWaitFuture(padd1);
         CkFuture p = CkCreateFuture();
-        std::vector<std::vector<int>> Y(size,std::vector<int>(size));
+/*        int Y[size];
         for (int i = 0; i < size; ++i)
         {
             for (int j = 0; j < size; ++j)
             {
                 Y[i][j] = m1->v[i][j];
             }
-        }
-        CProxy_strassen::ckNew(p,Y,C, size); 
+        }*/
+        CProxy_strassen::ckNew(p,m1->v,C, size); 
         //i could free m1 and m2 at this point
         delete m1;
         //ValueMsg *m3 = new ValueMsg(size);
@@ -320,15 +279,15 @@ public:
         //ValueMsg *m1 = new ValueMsg(size);
         ValueMsg * m1 = (ValueMsg *) CkWaitFuture(psub1);
         CkFuture p = CkCreateFuture();
-        std::vector<std::vector<int>> Y(size,std::vector<int>(size));
+/*        int Y[size];
         for (int i = 0; i < size; ++i)
         {
             for (int j = 0; j < size; ++j)
             {
                 Y[i][j] = m1->v[i][j];
             }
-        }
-        CProxy_strassen::ckNew(p,A,Y, size); 
+        }*/
+        CProxy_strassen::ckNew(p,A,m1->v, size); 
         //i could free m1 and m2 at this point
         delete m1;
         //ValueMsg *m3 = new ValueMsg(size);
@@ -347,36 +306,31 @@ public:
 class strassen : public CBase_strassen  {
     //private:  int result, count, IamRoot;  CProxy_strassen parent;
 
+
     public:  
     strassen(CkMigrateMessage *m) {};
-    strassen(CkFuture f,std::vector<std::vector<int>> A,std::vector<std::vector<int>> B,int size){ thisProxy.run(f,A,B,size); }
+    strassen(CkFuture f,int** A,int** B,int size){ thisProxy.run(f,A,B,size); }
 
 
-    void run(CkFuture f,std::vector<std::vector<int>> A,std::vector<std::vector<int>> B,int size) {
+    void run(CkFuture f,int** A,int** B,int size) {
+            ValueMsg *m = new ValueMsg(size);
+
             //if(VERBOSE)CkPrintf("here stressen run 1:\n");
 
-            int newSize = size/2;
-            std::vector<int> inner (newSize);
+/*            std::vector<int> inner (newSize);
             std::vector< std::vector<int> > 
             a11(newSize,inner), a12(newSize,inner), a21(newSize,inner), a22(newSize,inner),
-            b11(newSize,inner), b12(newSize,inner), b21(newSize,inner), b22(newSize,inner),
-            c11(newSize,inner), c12(newSize,inner), c21(newSize,inner), c22(newSize,inner),
-            p1(newSize,inner), p2(newSize,inner), p3(newSize,inner), p4(newSize,inner), 
-            p5(newSize,inner), p6(newSize,inner), p7(newSize,inner);
-
-            //if(VERBOSE)CkPrintf("here stressen run 2:\n");
-
-            std::vector<int> innerResult (size);
-            std::vector< std::vector<int> > result(size,innerResult);
-            //if(VERBOSE)CkPrintf("here stressen run 3:\n");
+            b11(newSize,inner), b12(newSize,inner), b21(newSize,inner), b22(newSize,inner),*/
 
         //if (n< THRESHOLD)
+        /*naive matrix multiplication used under THRESHOLD*/
         if(size < THRESHOLD){
+
              for (int i = 0; i < size; i++) {
                 for (int k = 0; k < size; k++) {
-                    result.at(i).at(k) = 0;
+                    m->v[i][k] = 0;
                     for (int j = 0; j < size; j++) {
-                        result.at(i).at(k) += A.at(i).at(j) * B.at(j).at(k);
+                        m->v[i][k] += A[i][j] * B[j][k];
                     }
                 }
             }
@@ -385,20 +339,32 @@ class strassen : public CBase_strassen  {
 
         }
         else {
+
+            int newSize = size/2;
+            int a11[newSize][newSize];
+            int a12[newSize][newSize];
+            int a21[newSize][newSize];
+            int a22[newSize][newSize];
+
+            int b11[newSize][newSize];
+            int b12[newSize][newSize];
+            int b21[newSize][newSize];
+            int b22[newSize][newSize];
             //if(VERBOSE)CkPrintf("here stressen run 4:\n");
 
-//dividing the matrices in 4 sub-matrices:
+        //dividing the matrices in 4 sub-matrices:
+        //NO NEED TO DIVIDE NOW AS WE WILL PASS THEM DIRECTLY
         for (int i = 0; i < newSize; i++) {
             for (int j = 0; j < newSize; j++) {
-                a11.at(i).at(j) = A.at(i).at(j);
-                a12.at(i).at(j) = A.at(i).at(j + newSize);
-                a21.at(i).at(j) = A.at(i + newSize).at(j);
-                a22.at(i).at(j) = A.at(i + newSize).at(j + newSize);
+                a11[i][j] = A[i][j];
+                a12[i][j] = A[i][j + newSize]; //*A[i][j+newSize] (NOPE]
+                a21[i][j] = A[i + newSize][j];
+                a22[i][j] = A[i + newSize][j + newSize];
 
-                b11.at(i).at(j) = B.at(i).at(j);
-                b12.at(i).at(j) = B.at(i).at(j + newSize);
-                b21.at(i).at(j) = B.at(i + newSize).at(j);
-                b22.at(i).at(j) = B.at(i + newSize).at(j + newSize);
+                b11[i][j] = B[i][j];
+                b12[i][j] = B[i][j + newSize];
+                b21[i][j] = B[i + newSize][j];
+                b22[i][j] = B[i + newSize][j + newSize];
             }
         }
             //if(VERBOSE)CkPrintf("here stressen run 4-1:\n");
@@ -489,12 +455,17 @@ class strassen : public CBase_strassen  {
                     creation share expense vs just compute it
             */
             /*compute C11 = M1+M4-M5+M7*/
+
+            //at this points we should wait for p1,p2,p3... to compute c11,c22,,c12,c21
+            //combine it into a big C and return it in the form of a msgs
+
+             // Grouping the results obtained in a single matrix:
             for (int i = 0; i < newSize; i++){
                 for (int j = 0; j < newSize; j++) {
-                    c11.at(i).at(j) = m1->v[i][j] + m4->v[i][j] - m5->v[i][j] + m7->v[i][j];
-                    c12.at(i).at(j) = m3->v[i][j] + m5->v[i][j];
-                    c21.at(i).at(j) = m2->v[i][j] + m4->v[i][j];
-                    c22.at(i).at(j) = m1->v[i][j] - m2->v[i][j] + m3->v[i][j] + m6->v[i][j];
+                    m->v[i][j] = m1->v[i][j] + m4->v[i][j] - m5->v[i][j] + m7->v[i][j];
+                    m->v[i][j + newSize] = m3->v[i][j] + m5->v[i][j];
+                    m->v[i + newSize][j] = m2->v[i][j] + m4->v[i][j];
+                    m->v[i + newSize][j + newSize] = m1->v[i][j] - m2->v[i][j] + m3->v[i][j] + m6->v[i][j];
                 } 
             }
             //if(VERBOSE)CkPrintf("here stressen run 12:\n");
@@ -508,41 +479,38 @@ class strassen : public CBase_strassen  {
 
 
 
-            //at this points we should wait for p1,p2,p3... to compute c11,c22,,c12,c21
-            //combine it into a big C and return it in the form of a msgs
 
-             // Grouping the results obtained in a single matrix:
-            for (int i = 0; i < newSize ; i++) {
+
+/*            for (int i = 0; i < newSize ; i++) {
                 for (int j = 0 ; j < newSize ; j++) {
-                    result.at(i).at(j) = c11.at(i).at(j);
-                    result.at(i).at(j + newSize) = c12.at(i).at(j);
-                    result.at(i + newSize).at(j) = c21.at(i).at(j);
-                    result.at(i + newSize).at(j + newSize) = c22.at(i).at(j);
+                    m->v[i][j] = c11[i][j];
+                    m->v[i].[j + newSize] = c12[i][j];
+                    m->v[i + newSize][j] = c21[i][j];
+                    m->v[i + newSize][j + newSize] = c22[i][j];
                 }
-            }
+            }*/
             //if(VERBOSE)CkPrintf("here stressen run 13:\n");
 
         }
-        ValueMsg *m = new ValueMsg(size);
             //if(VERBOSE)CkPrintf("here stressen run 14:\n");
 
 
 
-        for(int i=0; i<size;i++)
-            for (int j = 0; j < size; ++j)
-                m->v[i][j] = result.at(i).at(j);
+        // for(int i=0; i<size;i++)
+        //     for (int j = 0; j < size; ++j)
+        //         m->v[i][j] = result[i][j];
 
-        //m->v = result;
-        if(VERBOSE)CkPrintf("The resulting matrix is :\n");
+        // //m->v = result;
+        // if(VERBOSE)CkPrintf("The resulting matrix is :\n");
 
-        for(int i=0; i<size;i++){
-            for (int j = 0; j < size; ++j)
-            {
-                /* code */
-                if(VERBOSE)CkPrintf("%d ",result.at(i).at(j));
-            }
-                if(VERBOSE)CkPrintf("\n");
-        }
+        // for(int i=0; i<size;i++){
+        //     for (int j = 0; j < size; ++j)
+        //     {
+        //         /* code */
+        //         if(VERBOSE)CkPrintf("%d ",result[i][j]);
+        //     }
+        //         if(VERBOSE)CkPrintf("\n");
+        // }
         CkSendToFuture(f, m);
             //if(VERBOSE)CkPrintf("here stressen run 15:\n");
 
