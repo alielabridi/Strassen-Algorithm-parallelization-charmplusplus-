@@ -1,5 +1,5 @@
 #include "strassen.decl.h"
-int THRESHOLD = 3;
+#define THRESHOLD 16
 #define VERBOSE 1
 class ValueMsg : public CMessage_ValueMsg {
 public:
