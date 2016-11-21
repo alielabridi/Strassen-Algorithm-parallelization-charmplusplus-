@@ -1,38 +1,34 @@
 mainmodule strassen {
 message ValueMsg;
+message AddSubMsgArg;
+message StrassenSubMsgArg;
+message StrassenMsgArg;
+
 	mainchare Main {  
 	entry Main(CkArgMsg *m);
 	entry [threaded] void run(int size_);
 	};
 
 	chare strassen {  
-	entry strassen(CkFuture f,int** A,int** B,int size);
-	entry [threaded] void run(CkFuture f,int** A,int** B,int size);
+	entry strassen(StrassenMsgArg*);
+	entry [threaded] void run(StrassenMsgArg*);
 	};  
 
 	chare strassenSub {  
-	entry strassenSub(CkFuture f,int** A,
-                 int** B, int** C, int** D,
-                  int size, char partition);
-	entry [threaded] void run(CkFuture f,int** A,
-                 int** B, int** C, int** D,
-                  int size, char partition);
-    entry strassenSub(CkFuture f,int** A,
-             int** B, int** C,
-              int size, char partition);
-	entry [threaded] void run(CkFuture f,int** A,
-             int** B, int** C,
-              int size, char partition);
+	entry strassenSub(StrassenSubMsgArg *);
+	entry [threaded] void run(StrassenSubMsgArg *);
+    entry strassenSub(StrassenSubMsgArg *);
+	entry [threaded] void run(StrassenSubMsgArg *);
 	};  
 
 	chare addition {  
-	entry addition(CkFuture f,int** A, int** B, int size);
-	entry [threaded] void run(CkFuture f,int** A, int** B, int size);
+	entry addition(AddSubMsgArg* addSubMsgArg);
+	entry [threaded] void run(AddSubMsgArg* addSubMsgArg);
 	};
 
 	chare substraction {  
-	entry substraction(CkFuture f,int** A, int** B, int size);
-	entry [threaded] void run(CkFuture f,int** A, int** B, int size);
+	entry substraction(AddSubMsgArg* addSubMsgArg);
+	entry [threaded] void run(AddSubMsgArg* addSubMsgArg);
 	};
 
  }
