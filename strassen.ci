@@ -17,8 +17,6 @@ message StrassenMsgArg;
 	chare strassenSub {  
 	entry strassenSub(StrassenSubMsgArg *);
 	entry [threaded] void run(StrassenSubMsgArg *);
-    entry strassenSub(StrassenSubMsgArg *);
-	entry [threaded] void run(StrassenSubMsgArg *);
 	};  
 
 	chare addition {  

@@ -8,7 +8,7 @@ int THRESHOLD = 3;
 
 */
 
-class AddSubMsgArg : public CMessage_AddSubMsgArg {
+class AddSubMsgArg : public CMessage_ValueMsg {
 public:
     //std::vector<std::vector<int> > v;
     //int v(256,std::vector<int>(256));
@@ -19,8 +19,8 @@ public:
     int **B;
     //int v[256][256];
     AddSubMsgArg(CkFuture f,int size){
-        this.size = size;
-        this.f = f;
+        this->size = size;
+        this->f = f;
 
         A = new int*[size];
         B = new int*[size];
@@ -32,7 +32,7 @@ public:
 
  };
 
-class StrassenSubMsgArg : public CMessage_StrassenSubMsgArg {
+class StrassenSubMsgArg : public CMessage_ValueMsg {
 public:
     //std::vector<std::vector<int> > v;
     //int v(256,std::vector<int>(256));
@@ -47,9 +47,9 @@ public:
 
     //int v[256][256];
     StrassenSubMsgArg(CkFuture f,int size, char partition){
-        this.size = size;
-        this.f = f;
-        this.partition = partition;
+        this->size = size;
+        this->f = f;
+        this->partition = partition;
 
         A = new int*[size];
         B = new int*[size];
@@ -66,7 +66,7 @@ public:
 
  };
 
-class StrassenMsgArg : public CMessage_StrassenMsgArg {
+class StrassenMsgArg : public CMessage_ValueMsg {
 public:
     //std::vector<std::vector<int> > v;
     //int v(256,std::vector<int>(256));
@@ -78,8 +78,8 @@ public:
 
     //int v[256][256];
     StrassenMsgArg(CkFuture f,int size){
-        this.size = size;
-        this.f = f;
+        this->size = size;
+        this->f = f;
 
         A = new int*[size];
         B = new int*[size];
@@ -102,28 +102,6 @@ public:
         v = new int*[size];
         for (int i = 0; i < size; ++i)
             v[i] = new int[size];
-    }
-
-    //i found a solution to allocate a non fixed sized without segment fault
-    //ValueMsg(int size):v(size, std::vector<int>(size)){}
-    //for the time being i am going to stick to array as vectors produce segment fault
-    //int v[4][4];
- };
-
-class AddSubMsgArg : public CMessage_AddSubMsgArg {
-public:
-    //std::vector<std::vector<int> > v;
-    //int v(256,std::vector<int>(256));
-    int **A;
-    int **B;
-    //int v[256][256];
-    AddSubMsgArg(int size){
-        A = new int*[size];
-        B = new int*[size];
-        for (int i = 0; i < size; ++i){
-            A[i] = new int[size];
-            B[i] = new int[size];
-        }
     }
 
     //i found a solution to allocate a non fixed sized without segment fault
@@ -167,8 +145,8 @@ class Main : public CBase_Main {
         /*create a message to send a param to strassen*/
         StrassenMsgArg *strassenMsgArg = new StrassenMsgArg(f,size);
             /*copy the sub matrices need for each op*/
-             for (int i = 0; i < strassenSubMsgArg->size; ++i)
-                 for (int j = 0; j < strassenSubMsgArg->size; ++j)
+             for (int i = 0; i < size; ++i)
+                 for (int j = 0; j < size; ++j)
                  {
                     strassenMsgArg->A[i][j] = A[i][j];
                     strassenMsgArg->B[i][j] = B[i][j];
@@ -239,7 +217,7 @@ class substraction :public CBase_substraction{
     substraction(AddSubMsgArg* addSubMsgArg){
         thisProxy.run(addSubMsgArg);
     }
-    void run(AddSubMsgArg addSubMsgArg){
+    void run(AddSubMsgArg* addSubMsgArg){
         ValueMsg *m = new ValueMsg(addSubMsgArg->size);
 
         for (int i = 0; i < addSubMsgArg->size; ++i)
@@ -387,18 +365,12 @@ public:
     }  
 
 
-    }
-
-
-     /*three addition*/
-    strassenSub(StrassenSubMsgArg *strassenSubMsgArg){ thisProxy.run(strassenSubMsgArg); }
-
-    void run(StrassenSubMsgArg *strassenSubMsgArg){
+    /*THREE MATRICES ONLY*/
 
     //do the addition/substraction, and wait for for the result then call on it the bigger strassen chare
     //if needed a big multiplication
     //inside the bigger strassen chare it will decide whether to use the naive or strassen algo
-    if(strassenSubMsgArg->partition == '2' || strassenSubMsgArg->partition == '5'){
+    else if(strassenSubMsgArg->partition == '2' || strassenSubMsgArg->partition == '5'){
         /*partition M2 =(A21+A22)B11*/
         /*OR partition M5 =(A11+A12)B22*/
         CkFuture padd1 = CkCreateFuture(); 
@@ -495,6 +467,7 @@ public:
 
 
     }
+
 
 };
 class strassen : public CBase_strassen  {
