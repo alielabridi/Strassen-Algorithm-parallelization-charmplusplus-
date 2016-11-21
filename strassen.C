@@ -1,6 +1,6 @@
 #include "strassen.decl.h"
 int THRESHOLD = 3;
-#define VERBOSE 0
+#define VERBOSE 1
 
 /*include in the discussion why choosing arrays vs vector
         array more primitive => takes only what it needs 
@@ -53,6 +53,10 @@ public:
 
         A = new int*[size];
         B = new int*[size];
+        C = new int*[size];
+        if(partition == '6' || partition == '7' || partition == '1')
+            D = new int*[size];
+
         for (int i = 0; i < size; ++i){
             A[i] = new int[size];
             B[i] = new int[size];
@@ -173,7 +177,7 @@ class Main : public CBase_Main {
         bool correctness = true;
         for (int i = 0; i < size; ++i)
             for (int j = 0; j < size; ++j)
-                if(m->v[i][j] != B[i][j]) correctness = false;
+                if(m->v[i][j] != A[i][j]) correctness = false;
         if(correctness)
             CkPrintf("Correct: matrix size = %d, Threshold = %d, Exec time = %lf sec \n",  size, THRESHOLD,endtimer-starttimer);
         else
@@ -449,7 +453,7 @@ public:
                  for (int j = 0; j < strassenSubMsgArg->size; ++j)
                  {
                     strassenMsgArg->A[i][j] = m1->v[i][j];
-                    strassenMsgArg->B[i][j] = strassenSubMsgArg->C[i][j];
+                    strassenMsgArg->B[i][j] = strassenSubMsgArg->A[i][j];
                  }
         //CProxy_strassen::ckNew(p,m1->v,C, strassenSubMsgArg->size); 
         CProxy_strassen::ckNew(strassenMsgArg); 
@@ -563,6 +567,17 @@ class strassen : public CBase_strassen  {
             ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1Future);
             //if(VERBOSE)CkPrintf("here stressen run 5:\n");
             if(VERBOSE)CkPrintf("done with m1 of size %d\n",newSize);
+            if(VERBOSE)CkPrintf("resulting matrix %d\n",newSize);
+            if(VERBOSE){
+                for (int i = 0; i < newSize; ++i){
+                    for (int j = 0; j < newSize; ++j)
+                        CkPrintf("%d ", m1->v[i][j]);
+                CkPrintf("\n");
+
+                }
+
+            }
+            if(VERBOSE)CkPrintf("------------------ \n",newSize);
 
 
             /*three addition*/
@@ -584,6 +599,17 @@ class strassen : public CBase_strassen  {
             ValueMsg * m2 = (ValueMsg *) CkWaitFuture(p2Future);
             //if(VERBOSE)CkPrintf("here stressen run 6:\n of size %d\n",newSize);
             if(VERBOSE)CkPrintf("done with m2 of size %d\n",newSize);
+            if(VERBOSE)CkPrintf("resulting matrix %d\n",newSize);
+            if(VERBOSE){
+                for (int i = 0; i < newSize; ++i){
+                    for (int j = 0; j < newSize; ++j)
+                        CkPrintf("%d ", m2->v[i][j]);
+                CkPrintf("\n");
+
+                }
+
+            }
+            if(VERBOSE)CkPrintf("------------------ \n",newSize);
 
 
 
@@ -606,7 +632,17 @@ class strassen : public CBase_strassen  {
             CProxy_strassenSub::ckNew(strassenSubMsgArg3);
             ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p3Future);
             if(VERBOSE)CkPrintf("done with m3 of size %d\n",newSize);
+            if(VERBOSE)CkPrintf("resulting matrix %d\n",newSize);
+            if(VERBOSE){
+                for (int i = 0; i < newSize; ++i){
+                    for (int j = 0; j < newSize; ++j)
+                        CkPrintf("%d ", m3->v[i][j]);
+                CkPrintf("\n");
 
+                }
+
+            }
+            if(VERBOSE)CkPrintf("------------------ \n",newSize);
 
             //if(VERBOSE)CkPrintf("here stressen run 7:\n of size %d\n",newSize);
 
@@ -630,6 +666,17 @@ class strassen : public CBase_strassen  {
             ValueMsg * m4 = (ValueMsg *) CkWaitFuture(p4Future);
             //if(VERBOSE)CkPrintf("here stressen run 8:\n of size %d\n",newSize);
             if(VERBOSE)CkPrintf("done with m4 of size %d\n",newSize);
+            if(VERBOSE)CkPrintf("resulting matrix %d\n",newSize);
+            if(VERBOSE){
+                for (int i = 0; i < newSize; ++i){
+                    for (int j = 0; j < newSize; ++j)
+                        CkPrintf("%d ", m4->v[i][j]);
+                CkPrintf("\n");
+
+                }
+
+            }
+            if(VERBOSE)CkPrintf("------------------ \n",newSize);
 
 
 
@@ -651,6 +698,17 @@ class strassen : public CBase_strassen  {
             ValueMsg * m5 = (ValueMsg *) CkWaitFuture(p5Future);
             //if(VERBOSE)CkPrintf("here stressen run 9:\n");
             if(VERBOSE)CkPrintf("done with m5 of size %d\n",newSize);
+            if(VERBOSE)CkPrintf("resulting matrix %d\n",newSize);
+            if(VERBOSE){
+                for (int i = 0; i < newSize; ++i){
+                    for (int j = 0; j < newSize; ++j)
+                        CkPrintf("%d ", m5->v[i][j]);
+                CkPrintf("\n");
+
+                }
+
+            }
+            if(VERBOSE)CkPrintf("------------------ \n",newSize);
 
 
             //the value of P6
@@ -672,6 +730,17 @@ class strassen : public CBase_strassen  {
             ValueMsg * m6 = (ValueMsg *) CkWaitFuture(p6Future);
             //if(VERBOSE)CkPrintf("here stressen run 10:\n");
             if(VERBOSE)CkPrintf("done with m6 of size %d\n",newSize);
+            if(VERBOSE)CkPrintf("resulting matrix %d\n",newSize);
+            if(VERBOSE){
+                for (int i = 0; i < newSize; ++i){
+                    for (int j = 0; j < newSize; ++j)
+                        CkPrintf("%d ", m6->v[i][j]);
+                CkPrintf("\n");
+
+                }
+
+            }
+            if(VERBOSE)CkPrintf("------------------ \n",newSize);
 
 
             //the value of P7
@@ -693,6 +762,17 @@ class strassen : public CBase_strassen  {
             ValueMsg * m7 = (ValueMsg *) CkWaitFuture(p7Future);
             //if(VERBOSE)CkPrintf("here stressen run 11:\n");
             if(VERBOSE)CkPrintf("done with m7 of size %d\n",newSize);
+            if(VERBOSE)CkPrintf("resulting matrix %d\n",newSize);
+            if(VERBOSE){
+                for (int i = 0; i < newSize; ++i){
+                    for (int j = 0; j < newSize; ++j)
+                        CkPrintf("%d ", m7->v[i][j]);
+                CkPrintf("\n");
+
+                }
+
+            }
+            if(VERBOSE)CkPrintf("------------------ \n",newSize);
 
 
 
@@ -714,6 +794,10 @@ class strassen : public CBase_strassen  {
                     m->v[i][j + newSize] = m3->v[i][j] + m5->v[i][j];
                     m->v[i + newSize][j] = m2->v[i][j] + m4->v[i][j];
                     m->v[i + newSize][j + newSize] = m1->v[i][j] - m2->v[i][j] + m3->v[i][j] + m6->v[i][j];
+                     CkPrintf("%d", m1->v[i][j] + m4->v[i][j] - m5->v[i][j] + m7->v[i][j]);
+                    CkPrintf("%d", m3->v[i][j] + m5->v[i][j]);
+                    CkPrintf("%d", m2->v[i][j] + m4->v[i][j]);
+                    CkPrintf("%d ", m1->v[i][j] - m2->v[i][j] + m3->v[i][j] + m6->v[i][j]);
                 } 
             }
             //if(VERBOSE)CkPrintf("here stressen run 12:\n");
@@ -739,6 +823,17 @@ class strassen : public CBase_strassen  {
             }*/
             //if(VERBOSE)CkPrintf("here stressen run 13:\n");
 
+        if(VERBOSE)CkPrintf("The resulting matrix is :\n");
+
+        for(int i=0; i<2*newSize;i++){
+            for (int j = 0; j < 2*newSize; ++j)
+            {
+                /* code */
+                if(VERBOSE)CkPrintf("%d ",m->v[i][j]);
+            }
+                if(VERBOSE)CkPrintf("\n");
+        }
+
         }
             //if(VERBOSE)CkPrintf("here stressen run 14:\n");
 
@@ -749,16 +844,7 @@ class strassen : public CBase_strassen  {
         //         m->v[i][j] = result[i][j];
 
         // //m->v = result;
-        // if(VERBOSE)CkPrintf("The resulting matrix is :\n");
 
-        // for(int i=0; i<size;i++){
-        //     for (int j = 0; j < size; ++j)
-        //     {
-        //         /* code */
-        //         if(VERBOSE)CkPrintf("%d ",result[i][j]);
-        //     }
-        //         if(VERBOSE)CkPrintf("\n");
-        // }
         CkSendToFuture(strassenMsgArg->f, m);
             //if(VERBOSE)CkPrintf("here stressen run 15:\n");
 
