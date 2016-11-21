@@ -1,6 +1,12 @@
 #include "strassen.decl.h"
 int THRESHOLD = 3;
 #define VERBOSE 0
+
+/*include in the discussion why choosing arrays vs vector
+        array more primitive => takes only what it needs 
+        vector get more memory
+
+*/
 class ValueMsg : public CMessage_ValueMsg {
 public:
     //std::vector<std::vector<int> > v;
@@ -63,15 +69,15 @@ class Main : public CBase_Main {
         ValueMsg * m = (ValueMsg *) CkWaitFuture(f); 
         //if(VERBOSE)CkPrintf("here4 :\n");
 
-        if(VERBOSE)CkPrintf("FINAL - The resulting matrix is :\n");
+        CkPrintf("FINAL - The resulting matrix is :\n");
 
         for(int i=0; i<size;i++){
             for (int j = 0; j < size; ++j)
             {
                 /* code */
-                if(VERBOSE)CkPrintf("%d ",m->v[i][j]);
+                CkPrintf("%d ",m->v[i][j]);
             }
-                if(VERBOSE)CkPrintf("\n");
+                CkPrintf("\n");
         }
         CkExit(); 
     }  
@@ -90,22 +96,22 @@ class addition :public CBase_addition{
         std::vector<std::vector<int>> C(size,std::vector<int>(size));
 
         //if(VERBOSE)CkPrintf("addition run 1-1:\n");
+        ValueMsg *m = new ValueMsg(size);
 
         for (int i = 0; i < size; ++i)
         {
             for (int j = 0; j < size; ++j)
             {
-                C.at(i).at(j) = A.at(i).at(j) + B.at(i).at(j);
+                 m->v[i][j] = A.at(i).at(j) + B.at(i).at(j);
             }
         }
         //if(VERBOSE)CkPrintf("addition run 2:\n");
 
         /*wrap the resulting addition in a message of size and send it back to future*/
-        ValueMsg *m = new ValueMsg(size);
         //if(VERBOSE)CkPrintf("addition run 3:\n");
-        for (int i = 0; i < size; ++i)
+/*        for (int i = 0; i < size; ++i)
             for (int j = 0; j < size; ++j)
-                 m->v[i][j] = C.at(i).at(j);
+                 m->v[i][j] = C.at(i).at(j);*/
 
         //if(VERBOSE)CkPrintf("addition run 4:\n");
 
@@ -124,19 +130,19 @@ class substraction :public CBase_substraction{
     void run(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size){
         //std::vector<std::vector<int>> C;
         std::vector<std::vector<int>> C(size,std::vector<int>(size));
+        ValueMsg *m = new ValueMsg(size);
 
         for (int i = 0; i < size; ++i)
         {
             for (int j = 0; j < size; ++j)
             {
-                C.at(i).at(j) = A.at(i).at(j) - B.at(i).at(j);
+                 m->v[i][j] = A.at(i).at(j) - B.at(i).at(j);
             }
         }
         /*wrap the resulting substraction in a message of size and send it back to future*/
-        ValueMsg *m = new ValueMsg(size);
-        for (int i = 0; i < size; ++i)
+/*        for (int i = 0; i < size; ++i)
             for (int j = 0; j < size; ++j)
-                 m->v[i][j] = C.at(i).at(j);
+                 m->v[i][j] = C.at(i).at(j);*/
         CkSendToFuture(f, m);
     }
 };
@@ -471,6 +477,11 @@ class strassen : public CBase_strassen  {
 
 
             /*do we need another chare for the C1,C2,C3,C4 ?*/
+            /*we should say why we didn't parralized the C1,C2,C3,C4
+                    too much message passing
+                    shared data
+                    creation share expense vs just compute it
+            */
             /*compute C11 = M1+M4-M5+M7*/
             for (int i = 0; i < newSize; i++){
                 for (int j = 0; j < newSize; j++) {
