@@ -1,6 +1,7 @@
 #include "strassen.decl.h"
-int THRESHOLD = 3;
+int THRESHOLD = 33;
 #define VERBOSE 0
+#define VERBOSE1 1
 
 /*include in the discussion why choosing arrays vs vector
         array more primitive => takes only what it needs 
@@ -30,6 +31,14 @@ public:
         }
     }
 
+    ~AddSubMsgArg(){
+        for (int i = 0; i < size ; ++i){
+            delete [] A[i];
+            delete [] B[i];
+        }
+    }
+
+
  };
 
 class StrassenSubMsgArg : public CMessage_ValueMsg {
@@ -54,7 +63,7 @@ public:
         A = new int*[size];
         B = new int*[size];
         C = new int*[size];
-        if(partition == '6' || partition == '7' || partition == '1')
+        //if(partition == '6' || partition == '7' || partition == '1')
             D = new int*[size];
 
         for (int i = 0; i < size; ++i){
@@ -62,9 +71,20 @@ public:
             B[i] = new int[size];
             C[i] = new int[size];
             /*initilize it only if needed(in 3 partitions out of 7)*/
-            if(partition == '6' || partition == '7' || partition == '1')
+            //if(partition == '6' || partition == '7' || partition == '1')
                 D[i] = new int[size];
 
+        }
+    }
+
+
+    ~StrassenSubMsgArg(){
+        for (int i = 0; i < size ; ++i){
+            delete [] A[i];
+            delete [] B[i];
+            delete [] C[i];
+            //if(partition == '6' || partition == '7' || partition == '1')
+                delete [] D[i];
         }
     }
 
@@ -92,6 +112,13 @@ public:
             B[i] = new int[size];
         }
     }
+    ~StrassenMsgArg(){
+        for (int i = 0; i < size ; ++i){
+            delete [] A[i];
+            delete [] B[i];
+        }
+    }
+
 
  };
 
@@ -101,13 +128,20 @@ public:
     //std::vector<std::vector<int> > v;
     //int v(256,std::vector<int>(256));
     int **v;
+    int size;
     //int v[256][256];
     ValueMsg(int size){
+        this->size = size;
         v = new int*[size];
         for (int i = 0; i < size; ++i)
             v[i] = new int[size];
     }
 
+    ~ValueMsg(){
+        for (int i = 0; i < size ; ++i){
+            delete [] v[i];
+        }
+    }
     //i found a solution to allocate a non fixed sized without segment fault
     //ValueMsg(int size):v(size, std::vector<int>(size)){}
     //for the time being i am going to stick to array as vectors produce segment fault
@@ -121,7 +155,7 @@ class Main : public CBase_Main {
         Main(CkArgMsg * m) { 
             int size;
             if(m->argc > 1)size = atoi(m->argv[1]);
-            else size = 8;
+            else size = 64;
             if(m->argc > 2)THRESHOLD = atoi(m->argv[2]);
 
             thisProxy.run(size);
@@ -148,6 +182,8 @@ class Main : public CBase_Main {
         CkFuture f = CkCreateFuture();
         /*create a message to send a param to strassen*/
         StrassenMsgArg *strassenMsgArg = new StrassenMsgArg(f,size);
+            CkPrintf("here5\n");
+
             /*copy the sub matrices need for each op*/
              for (int i = 0; i < size; ++i)
                  for (int j = 0; j < size; ++j)
@@ -155,9 +191,15 @@ class Main : public CBase_Main {
                     strassenMsgArg->A[i][j] = A[i][j];
                     strassenMsgArg->B[i][j] = B[i][j];
                  }
+            CkPrintf("here6\n");
+
         CProxy_strassen::ckNew(strassenMsgArg);
+            CkPrintf("here7\n");
+
         //CProxy_strassen::ckNew(f,A,B,size);
         ValueMsg * m = (ValueMsg *) CkWaitFuture(f); 
+            CkPrintf("here8\n");
+
         double endtimer = CkWallTimer();
 
 
@@ -183,9 +225,6 @@ class Main : public CBase_Main {
         else
             CkPrintf("Incorrect: matrix size = %d, Threshold = %d, Exec time = %lf sec \n",  size, THRESHOLD,endtimer-starttimer);
                
-            
-        
-
         CkExit(); 
     }  
 };
@@ -197,6 +236,7 @@ class addition :public CBase_addition{
         thisProxy.run(addSubMsgArg);
     }
     void run(AddSubMsgArg *addSubMsgArg){
+        if(VERBOSE1)CkPrintf("starting addition in size = %d\n",addSubMsgArg->size);
 
         ValueMsg *m = new ValueMsg(addSubMsgArg->size);
 
@@ -222,6 +262,8 @@ class substraction :public CBase_substraction{
         thisProxy.run(addSubMsgArg);
     }
     void run(AddSubMsgArg* addSubMsgArg){
+        if(VERBOSE1)CkPrintf("starting substraction in size = %d\n",addSubMsgArg->size);
+
         ValueMsg *m = new ValueMsg(addSubMsgArg->size);
 
         for (int i = 0; i < addSubMsgArg->size; ++i)
@@ -247,6 +289,8 @@ public:
 
 
     void run(StrassenSubMsgArg *strassenSubMsgArg){
+        if(VERBOSE1)CkPrintf("starting Sub in size = %d, partition = %c\n",strassenSubMsgArg->size,strassenSubMsgArg->partition);
+
     //do the addition/substraction, and wait for for the result then call on it the bigger strassen chare
     //if needed a big multiplication
     //inside the bigger strassen chare it will decide whether to use the naive or strassen algo
@@ -279,8 +323,11 @@ public:
 
         //ValueMsg *m1 = new ValueMsg(size);
         //ValueMsg *m2 = new ValueMsg(size);
+
         ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1add1);
         ValueMsg * m2 = (ValueMsg *) CkWaitFuture(p1add2);
+        delete addSubMsgArg1;
+        delete addSubMsgArg2;
 
 
 
@@ -296,20 +343,21 @@ public:
                     strassenMsgArg->A[i][j] = m1->v[i][j];
                     strassenMsgArg->B[i][j] = m2->v[i][j];
                  }
+        delete m1;
+        delete m2;
             //CProxy
         //CProxy_strassen::ckNew(p1,m1->v,m2->v,strassenSubMsgArg->size); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
         CProxy_strassen::ckNew(strassenMsgArg); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
         //if(VERBOSE)CkPrintf("here stressen SUB run 6:\n");
 
         //i could free m1 and m2 at this point
-        //delete m1;
-        //delete m2;
         //if(VERBOSE)CkPrintf("here stressen SUB run 7:\n");
 
         //ValueMsg *m3 = new ValueMsg(size);
         ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p1);
         //if(VERBOSE)CkPrintf("here stressen SUB run 8:\n");
 
+        delete strassenMsgArg;
         CkSendToFuture(strassenSubMsgArg->f, m3);
         //p1 = m3->v; //returned product of the two summation
         //i can free m3 at this point
@@ -344,6 +392,8 @@ public:
         //ValueMsg *m2 = new ValueMsg(size);
         ValueMsg * m1 = (ValueMsg *) CkWaitFuture(psub1);
         ValueMsg * m2 = (ValueMsg *) CkWaitFuture(padd2);
+        delete addSubMsgArg1;
+        delete addSubMsgArg2;
         CkFuture p = CkCreateFuture();
         /*create a message to send a param to strassen*/
         StrassenMsgArg *strassenMsgArg = new StrassenMsgArg(p,strassenSubMsgArg->size);
@@ -354,14 +404,16 @@ public:
                     strassenMsgArg->A[i][j] = m1->v[i][j];
                     strassenMsgArg->B[i][j] = m2->v[i][j];
                  }
+        delete m1;
+        delete m2;
         //CProxy_strassen::ckNew(p, m1->v,m2->v, strassenSubMsgArg->size); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
         CProxy_strassen::ckNew(strassenMsgArg); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
         //i could free m1 and m2 at this point
-        //delete m1;
-        //delete m2;
         //ValueMsg *m3 = new ValueMsg(size);
         ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p);
+        delete strassenMsgArg;
         CkSendToFuture(strassenSubMsgArg->f, m3);
+
         //p1 = m3->v; //returned product of the two summation
         //i can free m3 at this point
         // thinking of using CkProbeFuture on (p1,p2,p3...) instead of wait to not block the next products
@@ -390,6 +442,7 @@ public:
         CProxy_addition::ckNew(addSubMsgArg1);//param not matching yet just a pseudo code
         //ValueMsg *m1 = new ValueMsg(size);
         ValueMsg * m1 = (ValueMsg *) CkWaitFuture(padd1);
+        delete addSubMsgArg1;
         CkFuture p = CkCreateFuture();
 /*        int Y[size];
         for (int i = 0; i < size; ++i)
@@ -408,12 +461,13 @@ public:
                     strassenMsgArg->A[i][j] = m1->v[i][j];
                     strassenMsgArg->B[i][j] = strassenSubMsgArg->C[i][j];
                  }
+        delete m1;
         //CProxy_strassen::ckNew(p,m1->v,C, strassenSubMsgArg->size); 
         CProxy_strassen::ckNew(strassenMsgArg); 
         //i could free m1 and m2 at this point
-        //delete m1;
         //ValueMsg *m3 = new ValueMsg(size);
         ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p);
+        delete strassenMsgArg;
         CkSendToFuture(strassenSubMsgArg->f, m3);
         //p1 = m3->v; //returned product of the two summation
         //i can free m3 at this point
@@ -437,6 +491,7 @@ public:
         CProxy_substraction::ckNew(addSubMsgArg1);//param not matching yet just a pseudo code
         //ValueMsg *m1 = new ValueMsg(size);
         ValueMsg * m1 = (ValueMsg *) CkWaitFuture(psub1);
+        delete addSubMsgArg1;
         CkFuture p = CkCreateFuture();
 /*        int Y[size];
         for (int i = 0; i < size; ++i)
@@ -455,14 +510,16 @@ public:
                     strassenMsgArg->A[i][j] = m1->v[i][j];
                     strassenMsgArg->B[i][j] = strassenSubMsgArg->A[i][j];
                  }
+        delete m1;
         //CProxy_strassen::ckNew(p,m1->v,C, strassenSubMsgArg->size); 
         CProxy_strassen::ckNew(strassenMsgArg); 
         //CProxy_strassen::ckNew(p,A,m1->v, strassenSubMsgArg->size); 
         //i could free m1 and m2 at this point
-        //delete m1;
         //ValueMsg *m3 = new ValueMsg(size);
         ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p);
+        delete strassenMsgArg;
         CkSendToFuture(strassenSubMsgArg->f, m3);
+
         //p1 = m3->v; //returned product of the two summation
         //i can free m3 at this point
         // thinking of using CkProbeFuture on (p1,p2,p3...) instead of wait to not block the next products
@@ -479,11 +536,17 @@ class strassen : public CBase_strassen  {
 
     public:  
     strassen(CkMigrateMessage *m) {};
-    strassen(StrassenMsgArg* strassenMsgArg){ thisProxy.run(strassenMsgArg); }
+    strassen(StrassenMsgArg* strassenMsgArg){ 
+        CkPrintf("testx\n");
+        thisProxy.run(strassenMsgArg); }
 
 
     void run(StrassenMsgArg* strassenMsgArg) {
+        CkPrintf("test1\n");
+        if(VERBOSE1)CkPrintf("starting strassen in size = %d\n",strassenMsgArg->size);
+
             ValueMsg *m = new ValueMsg(strassenMsgArg->size);
+        CkPrintf("test2\n");
 
             //if(VERBOSE)CkPrintf("here stressen run 1:\n");
 
@@ -495,7 +558,7 @@ class strassen : public CBase_strassen  {
         //if (n< THRESHOLD)
         /*naive matrix multiplication used under THRESHOLD*/
         if(strassenMsgArg->size < THRESHOLD){
-
+            CkPrintf("here1\n");
              for (int i = 0; i < strassenMsgArg->size; i++) {
                 for (int k = 0; k < strassenMsgArg->size; k++) {
                     m->v[i][k] = 0;
@@ -504,13 +567,15 @@ class strassen : public CBase_strassen  {
                     }
                 }
             }
+            CkPrintf("here2\n");
+
             // if(VERBOSE)CkPrintf("computation done by ikjalgorithm\n");        
 
 
         }
         else {
 
-            int newSize = strassenMsgArg->size/2;
+            int newSize = (strassenMsgArg->size)/2;
             // int a11[newSize][newSize];
             // int a12[newSize][newSize];
             // int a21[newSize][newSize];
@@ -565,6 +630,7 @@ class strassen : public CBase_strassen  {
             //CProxy_strassenSub::ckNew(p1Future, a11, a22, b11, b22,newSize,'1');
             CProxy_strassenSub::ckNew(strassenSubMsgArg1);
             ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1Future);
+            delete strassenSubMsgArg1;
             //if(VERBOSE)CkPrintf("here stressen run 5:\n");
             if(VERBOSE)CkPrintf("done with m1 of size %d\n",newSize);
             if(VERBOSE)CkPrintf("resulting matrix %d\n",newSize);
@@ -597,6 +663,7 @@ class strassen : public CBase_strassen  {
             //CProxy_strassenSub::ckNew(p2Future, a21, a22, b11,newSize,'2');
             CProxy_strassenSub::ckNew(strassenSubMsgArg2);
             ValueMsg * m2 = (ValueMsg *) CkWaitFuture(p2Future);
+            delete strassenSubMsgArg2;
             //if(VERBOSE)CkPrintf("here stressen run 6:\n of size %d\n",newSize);
             if(VERBOSE)CkPrintf("done with m2 of size %d\n",newSize);
             if(VERBOSE)CkPrintf("resulting matrix %d\n",newSize);
@@ -631,6 +698,7 @@ class strassen : public CBase_strassen  {
             //CProxy_strassenSub::ckNew(p3Future, a11, b12, b22,newSize,'3');
             CProxy_strassenSub::ckNew(strassenSubMsgArg3);
             ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p3Future);
+            delete strassenSubMsgArg3;
             if(VERBOSE)CkPrintf("done with m3 of size %d\n",newSize);
             if(VERBOSE)CkPrintf("resulting matrix %d\n",newSize);
             if(VERBOSE){
@@ -664,6 +732,7 @@ class strassen : public CBase_strassen  {
             //CProxy_strassenSub::ckNew(p4Future, a22, b21, b11,newSize,'4');
             CProxy_strassenSub::ckNew(strassenSubMsgArg4);
             ValueMsg * m4 = (ValueMsg *) CkWaitFuture(p4Future);
+            delete strassenSubMsgArg4;
             //if(VERBOSE)CkPrintf("here stressen run 8:\n of size %d\n",newSize);
             if(VERBOSE)CkPrintf("done with m4 of size %d\n",newSize);
             if(VERBOSE)CkPrintf("resulting matrix %d\n",newSize);
@@ -696,6 +765,7 @@ class strassen : public CBase_strassen  {
             //CProxy_strassenSub::ckNew(p5Future, a11, a12, b22,newSize,'5');
             CProxy_strassenSub::ckNew(strassenSubMsgArg5);
             ValueMsg * m5 = (ValueMsg *) CkWaitFuture(p5Future);
+            delete strassenSubMsgArg5;
             //if(VERBOSE)CkPrintf("here stressen run 9:\n");
             if(VERBOSE)CkPrintf("done with m5 of size %d\n",newSize);
             if(VERBOSE)CkPrintf("resulting matrix %d\n",newSize);
@@ -728,6 +798,7 @@ class strassen : public CBase_strassen  {
             //CProxy_strassenSub::ckNew(p6Future, a21, a11, b11,b12,newSize,'6');
             CProxy_strassenSub::ckNew(strassenSubMsgArg6);
             ValueMsg * m6 = (ValueMsg *) CkWaitFuture(p6Future);
+            delete strassenSubMsgArg6;
             //if(VERBOSE)CkPrintf("here stressen run 10:\n");
             if(VERBOSE)CkPrintf("done with m6 of size %d\n",newSize);
             if(VERBOSE)CkPrintf("resulting matrix %d\n",newSize);
@@ -760,6 +831,7 @@ class strassen : public CBase_strassen  {
             //CProxy_strassenSub::ckNew(p7Future, a12, a22, b21,b22,newSize,'7');
             CProxy_strassenSub::ckNew(strassenSubMsgArg7);
             ValueMsg * m7 = (ValueMsg *) CkWaitFuture(p7Future);
+            delete strassenSubMsgArg7;
             //if(VERBOSE)CkPrintf("here stressen run 11:\n");
             if(VERBOSE)CkPrintf("done with m7 of size %d\n",newSize);
             if(VERBOSE)CkPrintf("resulting matrix %d\n",newSize);
@@ -797,13 +869,13 @@ class strassen : public CBase_strassen  {
                 } 
             }
             //if(VERBOSE)CkPrintf("here stressen run 12:\n");
-            //delete m1;
-            //delete m2;
-            //delete m3;
-            //delete m4;
-            //delete m5;
-            //delete m6;
-            //delete m7;
+            delete m1;
+            delete m2;
+            delete m3;
+            delete m4;
+            delete m5;
+            delete m6;
+            delete m7;
 
 
 
@@ -830,9 +902,11 @@ class strassen : public CBase_strassen  {
         //         m->v[i][j] = result[i][j];
 
         // //m->v = result;
+        CkPrintf("here3\n");
 
         CkSendToFuture(strassenMsgArg->f, m);
             //if(VERBOSE)CkPrintf("here stressen run 15:\n");
+            CkPrintf("here4\n");
 
 
           
