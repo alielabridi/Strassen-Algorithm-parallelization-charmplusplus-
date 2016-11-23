@@ -1,5 +1,7 @@
 mainmodule strassen {
 message ValueMsg;
+readonly int THRESHOLD;
+readonly int VERBOSE;
 	mainchare Main {  
 	entry Main(CkArgMsg *m);
 	entry [threaded] void run(int size_);

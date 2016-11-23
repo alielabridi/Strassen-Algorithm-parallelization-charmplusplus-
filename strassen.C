@@ -1,6 +1,6 @@
 #include "strassen.decl.h"
-#define THRESHOLD 16
-#define VERBOSE 0
+int THRESHOLD;
+int VERBOSE;
 class ValueMsg : public CMessage_ValueMsg {
 public:
     std::vector<std::vector<int> > v;
@@ -13,18 +13,13 @@ class Main : public CBase_Main {
     public: 
         Main(CkMigrateMessage *m) {};
         Main(CkArgMsg * m) { 
-/*            if(m->argc < 2) {
-                //CmiAbort("./strassen N.");
-                //cout << "test";
-                CkExit();
-            }
-            int size = atoi(m->argv[1]);  */
-        //if(VERBOSE)CkPrintf("here1 :\n");
             int size;
             if(m->argc > 1)size = atoi(m->argv[1]);
             else size = 8;
-/*            if(m->argc > 2)THRESHOLD = atoi(m->argv[2]);
-*/
+            if(m->argc > 2)THRESHOLD = atoi(m->argv[2]);
+            else THRESHOLD = 8;
+            if(m->argc > 3)VERBOSE = atoi(m->argv[3]);
+            else VERBOSE = 1;
             thisProxy.run(size);
         }
     void run(int size_) {
@@ -74,7 +69,7 @@ class Main : public CBase_Main {
             CkPrintf("Correct: matrix size = %d, Threshold = %d, Exec time = %lf sec \n",  size, THRESHOLD,endtimer-starttimer);
         else
             CkPrintf("Incorrect: matrix size = %d, Threshold = %d, Exec time = %lf sec \n",  size, THRESHOLD,endtimer-starttimer);
-               
+        delete m;
         CkExit(); 
     }  
 };
