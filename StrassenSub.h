@@ -33,19 +33,36 @@ public:
         CProxy_addition::ckNew(p1add2,C,D,size);//param not matching yet just a pseudo code
         //if(VERBOSE)CkPrintf("here stressen SUB run 3:\n");
 
+        //ValueMsg *m1 = new ValueMsg(size);
+        //ValueMsg *m2 = new ValueMsg(size);
         ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1add1);
         ValueMsg * m2 = (ValueMsg *) CkWaitFuture(p1add2);
 
+      /*  if(VERBOSE)CkPrintf("value of a11+a22:\n");
+
+        for(int i=0; i<newSize;i++){
+            for (int j = 0; j < newSize; ++j)
+            {
+                if(VERBOSE)CkPrintf("%d ",a11->v[i][j]);
+            }
+                if(VERBOSE)CkPrintf("\n");
+        }*/
+        //if(VERBOSE)CkPrintf("here stressen SUB run 4:\n");
+
         CkFuture p1 = CkCreateFuture();
+        //if(VERBOSE)CkPrintf("here stressen SUB run 5:\n");
 
         CProxy_strassen::ckNew(p1,m1->v,m2->v,size); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
+        //if(VERBOSE)CkPrintf("here stressen SUB run 6:\n");
 
         //i could free m1 and m2 at this point
+        //if(VERBOSE)CkPrintf("here stressen SUB run 7:\n");
 
         //ValueMsg *m3 = new ValueMsg(size);
         delete m1;
         delete m2;
         ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p1);
+        //if(VERBOSE)CkPrintf("here stressen SUB run 8:\n");
 
         CkSendToFuture(f, m3);
         //p1 = m3->v; //returned product of the two summation
@@ -62,7 +79,8 @@ public:
         //i could spawn all the additions needed here   
         CProxy_substraction::ckNew(psub1,A,B,size);//param not matching yet just a pseudo code
         CProxy_addition::ckNew(padd2,C,D,size);//param not matching yet just a pseudo code
-
+        //ValueMsg *m1 = new ValueMsg(size);
+        //ValueMsg *m2 = new ValueMsg(size);
         ValueMsg * m1 = (ValueMsg *) CkWaitFuture(psub1);
         ValueMsg * m2 = (ValueMsg *) CkWaitFuture(padd2);
         CkFuture p = CkCreateFuture();
@@ -102,7 +120,7 @@ public:
         CkFuture padd1 = CkCreateFuture(); 
         //i could spawn all the additions needed here   
         CProxy_addition::ckNew(padd1,A,B,size);//param not matching yet just a pseudo code
-
+        //ValueMsg *m1 = new ValueMsg(size);
         ValueMsg * m1 = (ValueMsg *) CkWaitFuture(padd1);
         CkFuture p = CkCreateFuture();
 
@@ -123,7 +141,7 @@ public:
         CkFuture psub1 = CkCreateFuture(); 
         //i could spawn all the additions needed here   
         CProxy_substraction::ckNew(psub1,B,C,size);//param not matching yet just a pseudo code
-
+        //ValueMsg *m1 = new ValueMsg(size);
         ValueMsg * m1 = (ValueMsg *) CkWaitFuture(psub1);
         CkFuture p = CkCreateFuture();
         CProxy_strassen::ckNew(p,A,m1->v, size); 
