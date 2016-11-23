@@ -38,7 +38,7 @@ class Main : public CBase_Main {
             }
 
         for (int i = 0; i < size; ++i)
-            B[i] = 1;
+            B[i][i] = 1;
 
 
         /*execution of parralelization*/
