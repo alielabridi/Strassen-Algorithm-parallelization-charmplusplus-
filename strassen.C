@@ -32,13 +32,13 @@ class Main : public CBase_Main {
 
         for (int i = 0; i < size; ++i)
             for (int j = 0; j < size; ++j){
-            B.at(i).at(j) = 0;
-            A.at(i).at(j) = 1;
+            B[i][j] = 0;
+            A[i][j] = 1;
 
             }
 
         for (int i = 0; i < size; ++i)
-            B.at(i).at(i) = 1;
+            B[i] = 1;
 
 
         /*execution of parralelization*/
@@ -93,7 +93,7 @@ class addition :public CBase_addition{
         {
             for (int j = 0; j < size; ++j)
             {
-                m->v[i][j] = A.at(i).at(j) + B.at(i).at(j);
+                m->v[i][j] = A[i][j] + B[i][j];
             }
         }
         //if(VERBOSE)CkPrintf("addition run 2:\n");
@@ -123,7 +123,7 @@ class substraction :public CBase_substraction{
         {
             for (int j = 0; j < size; ++j)
             {
-                m->v[i][j] = A.at(i).at(j) - B.at(i).at(j);
+                m->v[i][j] = A[i][j] - B[i][j];
             }
         }
         /*wrap the resulting substraction in a message of size and send it back to future*/
@@ -298,13 +298,21 @@ class strassen : public CBase_strassen  {
 
     void run(CkFuture f,std::vector<std::vector<int>> A,std::vector<std::vector<int>> B,int size) {
             //if(VERBOSE)CkPrintf("here stressen run 1:\n");
-            ValueMsg *m = new ValueMsg(size);
+        ValueMsg *m = new ValueMsg(size);
 
-            int newSize = size/2;
-            std::vector<int> inner (newSize);
-            std::vector< std::vector<int> > 
-            a11(newSize,inner), a12(newSize,inner), a21(newSize,inner), a22(newSize,inner),
-            b11(newSize,inner), b12(newSize,inner), b21(newSize,inner), b22(newSize,inner);
+        int newSize = size/2;
+        
+        std::vector<std::vector<int>> a11(newSize,std::vector<int>(newSize));
+        std::vector<std::vector<int>> a12(newSize,std::vector<int>(newSize));
+        std::vector<std::vector<int>> a21(newSize,std::vector<int>(newSize));
+        std::vector<std::vector<int>> a22(newSize,std::vector<int>(newSize));
+        std::vector<std::vector<int>> b11(newSize,std::vector<int>(newSize));
+        std::vector<std::vector<int>> b12(newSize,std::vector<int>(newSize));
+        std::vector<std::vector<int>> b21(newSize,std::vector<int>(newSize));
+        std::vector<std::vector<int>> b22(newSize,std::vector<int>(newSize));
+
+
+
 
             //if(VERBOSE)CkPrintf("here stressen run 3:\n");
 
@@ -312,9 +320,9 @@ class strassen : public CBase_strassen  {
         if(size < THRESHOLD){
              for (int i = 0; i < size; i++) {
                 for (int k = 0; k < size; k++) {
-                    m->v.at(i).at(k) = 0;
+                    m->v[i][k] = 0;
                     for (int j = 0; j < size; j++) {
-                        m->v.at(i).at(k) += A.at(i).at(j) * B.at(j).at(k);
+                        m->v[i][k] += A[i][j] * B[j][k];
                     }
                 }
             }
@@ -328,15 +336,15 @@ class strassen : public CBase_strassen  {
 //dividing the matrices in 4 sub-matrices:
         for (int i = 0; i < newSize; i++) {
             for (int j = 0; j < newSize; j++) {
-                a11.at(i).at(j) = A.at(i).at(j);
-                a12.at(i).at(j) = A.at(i).at(j + newSize);
-                a21.at(i).at(j) = A.at(i + newSize).at(j);
-                a22.at(i).at(j) = A.at(i + newSize).at(j + newSize);
+                a11[i][j] = A[i][j];
+                a12[i][j] = A[i][j + newSize];
+                a21[i][j] = A[i + newSize][j];
+                a22[i][j] = A[i + newSize][j + newSize];
 
-                b11.at(i).at(j) = B.at(i).at(j);
-                b12.at(i).at(j) = B.at(i).at(j + newSize);
-                b21.at(i).at(j) = B.at(i + newSize).at(j);
-                b22.at(i).at(j) = B.at(i + newSize).at(j + newSize);
+                b11[i][j] = B[i][j];
+                b12[i][j] = B[i][j + newSize];
+                b21[i][j] = B[i + newSize][j];
+                b22[i][j] = B[i + newSize][j + newSize];
             }
         }
             //if(VERBOSE)CkPrintf("here stressen run 4-1:\n");
@@ -424,10 +432,10 @@ class strassen : public CBase_strassen  {
             /*compute C11 = M1+M4-M5+M7*/
             for (int i = 0; i < newSize; i++){
                 for (int j = 0; j < newSize; j++) {
-                    m->v.at(i).at(j) = m1->v[i][j] + m4->v[i][j] - m5->v[i][j] + m7->v[i][j];
-                    m->v.at(i).at(j + newSize) = m3->v[i][j] + m5->v[i][j];
-                    m->v.at(i + newSize).at(j) = m2->v[i][j] + m4->v[i][j];
-                    m->v.at(i + newSize).at(j + newSize) = m1->v[i][j] - m2->v[i][j] + m3->v[i][j] + m6->v[i][j];
+                    m->v[i][j] = m1->v[i][j] + m4->v[i][j] - m5->v[i][j] + m7->v[i][j];
+                    m->v[i][j + newSize] = m3->v[i][j] + m5->v[i][j];
+                    m->v[i + newSize][j] = m2->v[i][j] + m4->v[i][j];
+                    m->v[i + newSize][j + newSize] = m1->v[i][j] - m2->v[i][j] + m3->v[i][j] + m6->v[i][j];
                 } 
             }
             //if(VERBOSE)CkPrintf("here stressen run 12:\n");
@@ -459,7 +467,7 @@ class strassen : public CBase_strassen  {
             for (int j = 0; j < size; ++j)
             {
                 /* code */
-                if(VERBOSE)CkPrintf("%d ",m->v.at(i).at(j));
+                if(VERBOSE)CkPrintf("%d ",m->v[i][j]);
             }
                 if(VERBOSE)CkPrintf("\n");
         }
