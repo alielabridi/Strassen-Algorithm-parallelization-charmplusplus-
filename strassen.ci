@@ -3,15 +3,14 @@ message ValueMsg;
 message AddSubMsgArg;
 message StrassenSubMsgArg;
 message StrassenMsgArg;
-
+readonly int THRESHOLD;
+readonly int VERBOSE;
 	mainchare Main {  
 	entry Main(CkArgMsg *m);
 	entry [threaded] void run(int size_);
 	};
 
 	chare strassen {  
-	entry strassen(vector<vector<int>> A, vector<vector<int>> B,int size,CkFuture f);
-	entry [threaded] void run(vector<vector<int>> A, vector<vector<int>> B,int size,CkFuture f);
 	entry strassen(StrassenMsgArg*);
 	entry [threaded] void run(StrassenMsgArg*);
 	};  
