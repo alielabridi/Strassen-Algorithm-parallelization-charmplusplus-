@@ -17,6 +17,9 @@ public:
     void run(CkFuture f,std::vector<std::vector<int>> A,
                  std::vector<std::vector<int>> B, std::vector<std::vector<int>> C, std::vector<std::vector<int>> D,
                   int size, char partition){
+
+  //if(VERBOSE)CkPrintf("Work done by processor %d\n",CkMyPe());
+       
     //do the addition/substraction, and wait for for the result then call on it the bigger strassen chare
     //if needed a big multiplication
     //inside the bigger strassen chare it will decide whether to use the naive or strassen algo
