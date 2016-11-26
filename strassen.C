@@ -1,3 +1,4 @@
+#include <fstream>
 #include "strassen.decl.h"
 #include "StrassenSub.h"
 #include "AddSubMat.h"
@@ -25,7 +26,7 @@ class Main : public CBase_Main {
         std::vector<std::vector<int>> A(size,std::vector<int>(size));
         std::vector<std::vector<int>> B(size,std::vector<int>(size));
 
-
+  if(VERBOSE)CkPrintf("Work done by processor %d\n",CkMyPe());
 
         for (int i = 0; i < size; ++i)
             for (int j = 0; j < size; ++j){
@@ -58,15 +59,25 @@ class Main : public CBase_Main {
         }
        
         /*checking result if correct*/
+
+        std::ofstream myfile;
+  myfile.open ("results.txt",std::ofstream::app);
+
         bool correctness = true;
         for (int i = 0; i < size; ++i)
             for (int j = 0; j < size; ++j)
                 if(m->v[i][j] != A[i][j]) correctness = false;
-        if(correctness)
-            CkPrintf("Correct: matrix size = %d, Threshold = %d, Exec time = %lf sec \n",  size, THRESHOLD,endtimer-starttimer);
-        else
-            CkPrintf("Incorrect: matrix size = %d, Threshold = %d, Exec time = %lf sec \n",  size, THRESHOLD,endtimer-starttimer);
+        if(correctness){
+            CkPrintf("Correct: matrix size = %d, Threshold = %d,# of proc = %d, Exec time = %lf sec \n",  size, THRESHOLD,CkNumPes(),endtimer-starttimer);
+            myfile<<"Correct: matrix size = " <<size<<", Threshold = "<< THRESHOLD<<",# of proc = "<<CkNumPes()<<" , Exec time = " << endtimer-starttimer << "\n";
+        }
+        else{
+            CkPrintf("Incorrect: matrix size = %d, Threshold = %d,# of proc = %d, Exec time = %lf sec \n",  size, THRESHOLD,CkNumPes(),endtimer-starttimer);
+            myfile<<"Incorrect: matrix size = " <<size<<", Threshold = "<< THRESHOLD<<",# of proc = "<<CkNumPes()<<" , Exec time = " << endtimer-starttimer << "\n";
+        }
         delete m;
+  myfile.close();
+
         CkExit(); 
     }  
 };
@@ -102,7 +113,7 @@ class strassen : public CBase_strassen  {
             //if(VERBOSE)CkPrintf("here stressen run 3:\n");
 
         //if (n< THRESHOLD)
-        if(size < THRESHOLD){
+        if(size <= THRESHOLD){
              for (int i = 0; i < size; i++) {
                 for (int k = 0; k < size; k++) {
                     m->v[i][k] = 0;
