@@ -7,30 +7,30 @@ readonly int VERBOSE;
 	entry [threaded] void run(int size_);
 	};
 	chare strassen {  
-	entry strassen(CkFuture f,std::vector<std::vector<int>> A,std::vector<std::vector<int>> B,int size);
-	entry [threaded] void run(CkFuture f,std::vector<std::vector<int>> A,std::vector<std::vector<int>> B,int size);
+	entry strassen(CkFuture f, std::vector<std::vector<int>> A, std::vector<std::vector<int>> B,int size);
+	entry [threaded] void run(CkFuture f, std::vector<std::vector<int>> A, std::vector<std::vector<int>> B,int size);
 	};  
 	chare strassenSub {  
-	entry strassenSub(CkFuture f,std::vector<std::vector<int>> A,
-                 std::vector<std::vector<int>> B, std::vector<std::vector<int>> C, std::vector<std::vector<int>> D,
+	entry strassenSub(CkFuture f, std::vector<std::vector<int>> A,
+                  std::vector<std::vector<int>> B,  std::vector<std::vector<int>> C,  std::vector<std::vector<int>> D,
                   int size, char partition);
-	entry [threaded] void run(CkFuture f,std::vector<std::vector<int>> A,
-                 std::vector<std::vector<int>> B, std::vector<std::vector<int>> C, std::vector<std::vector<int>> D,
+	entry [threaded] void run(CkFuture f, std::vector<std::vector<int>> A,
+                  std::vector<std::vector<int>> B,  std::vector<std::vector<int>> C,  std::vector<std::vector<int>> D,
                   int size, char partition);
-    entry strassenSub(CkFuture f,std::vector<std::vector<int>> A,
-             std::vector<std::vector<int>> B, std::vector<std::vector<int>> C,
+    entry strassenSub(CkFuture f, std::vector<std::vector<int>> A,
+              std::vector<std::vector<int>> B,  std::vector<std::vector<int>> C,
               int size, char partition);
-	entry [threaded] void run(CkFuture f,std::vector<std::vector<int>> A,
-             std::vector<std::vector<int>> B, std::vector<std::vector<int>> C,
+	entry [threaded] void run(CkFuture f, std::vector<std::vector<int>> A,
+              std::vector<std::vector<int>> B,  std::vector<std::vector<int>> C,
               int size, char partition);
 	};  
 	chare addition {  
-	entry addition(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size);
-	entry [threaded] void run(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size);
+	entry addition(CkFuture f, std::vector<std::vector<int>> A,  std::vector<std::vector<int>> B, int size);
+	entry [threaded] void run(CkFuture f, std::vector<std::vector<int>> A,  std::vector<std::vector<int>> B, int size);
 	};
 	chare substraction {  
-	entry substraction(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size);
-	entry [threaded] void run(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size);
+	entry substraction(CkFuture f, std::vector<std::vector<int>> A,  std::vector<std::vector<int>> B, int size);
+	entry [threaded] void run(CkFuture f, std::vector<std::vector<int>> A,  std::vector<std::vector<int>> B, int size);
 	};
 
  }

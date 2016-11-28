@@ -5,14 +5,15 @@
 class addition :public CBase_addition{
     public:
     addition(CkMigrateMessage *m) {};
-    addition(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size){
+    addition(CkFuture f,const std::vector<std::vector<int>>& A, const std::vector<std::vector<int>>& B, int size){
         thisProxy.run(f,A,B,size);
     }
-    void run(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size){
+    void run(CkFuture f,const std::vector<std::vector<int>>& A, const std::vector<std::vector<int>>& B, int size){
         //if(VERBOSE)CkPrintf("addition run 1:\n");
         /*wrap the resulting addition in a message of size and send it back to future*/
 
   //if(VERBOSE)CkPrintf("Work done by processor %d\n",CkMyPe());
+CkPrintf("ADD: Work done by processor %d\n",CkMyPe());
 
 
         ValueMsg *m = new ValueMsg(size);
@@ -20,14 +21,18 @@ class addition :public CBase_addition{
 
 
         //if(VERBOSE)CkPrintf("addition run 1-1:\n");
+/*                CkPrintf("the result of the addition\n");
 
         for (int i = 0; i < size; ++i)
         {
             for (int j = 0; j < size; ++j)
             {
                 m->v[i][j] = A[i][j] + B[i][j];
+                CkPrintf("%d ", m->v[i][j] );
             }
-        }
+                CkPrintf("\n");
+
+        }*/
         //if(VERBOSE)CkPrintf("addition run 2:\n");
 
 
@@ -43,13 +48,14 @@ class addition :public CBase_addition{
 class substraction :public CBase_substraction{
     public:
     substraction(CkMigrateMessage *m) {};
-    substraction(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size){
+    substraction(CkFuture f,const std::vector<std::vector<int>>& A, const std::vector<std::vector<int>>& B, int size){
         thisProxy.run(f,A,B,size);
     }
-    void run(CkFuture f,std::vector<std::vector<int>> A, std::vector<std::vector<int>> B, int size){
+    void run(CkFuture f,const std::vector<std::vector<int>>& A, const std::vector<std::vector<int>>& B, int size){
         //std::vector<std::vector<int>> C;
 
   //if(VERBOSE)CkPrintf("Work done by processor %d\n",CkMyPe());
+CkPrintf("substraction: Work done by processor %d\n",CkMyPe());
 
                    ValueMsg *m = new ValueMsg(size);
 
