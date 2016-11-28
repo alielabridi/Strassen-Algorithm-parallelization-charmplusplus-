@@ -67,16 +67,26 @@ class Main : public CBase_Main {
         for (int i = 0; i < size; ++i)
             for (int j = 0; j < size; ++j)
                 if(m->v[i][j] != A[i][j]) correctness = false;
-        if(correctness){
-            CkPrintf("Correct: matrix size = %d, Threshold = %d,# of proc = %d, Exec time = %lf sec \n",  size, THRESHOLD,CkNumPes(),endtimer-starttimer);
-            myfile<<"Correct: matrix size = " <<size<<", Threshold = "<< THRESHOLD<<",# of proc = "<<CkNumPes()<<" , Exec time = " << endtimer-starttimer << "\n";
+        if(correctness && THRESHOLD == size){
+            CkPrintf("Naive Serial - Correct: matrix size = %d, Exec time = %lf sec \n",  size,endtimer-starttimer);
+            myfile<<"Naive Serial - Correct: matrix size = " <<size<<" , Exec time = " << endtimer-starttimer << "\n";
+        
+        }
+        else if(!correctness && THRESHOLD == size){
+            CkPrintf("Naive Serial - Incorrect: matrix size = %d, Exec time = %lf sec \n",  size,endtimer-starttimer);
+            myfile<<"Naive Serial - Incorrect: matrix size = " <<size<<" , Exec time = " << endtimer-starttimer << "\n";
+        
+        }
+        else if(correctness){
+            CkPrintf("Strassen - Correct: matrix size = %d, Threshold = %d,# of proc = %d, Exec time = %lf sec \n",  size, THRESHOLD,CkNumPes(),endtimer-starttimer);
+            myfile<<"Strassen - Correct: matrix size = " <<size<<", Threshold = "<< THRESHOLD<<",# of proc = "<<CkNumPes()<<" , Exec time = " << endtimer-starttimer << "\n";
         }
         else{
-            CkPrintf("Incorrect: matrix size = %d, Threshold = %d,# of proc = %d, Exec time = %lf sec \n",  size, THRESHOLD,CkNumPes(),endtimer-starttimer);
-            myfile<<"Incorrect: matrix size = " <<size<<", Threshold = "<< THRESHOLD<<",# of proc = "<<CkNumPes()<<" , Exec time = " << endtimer-starttimer << "\n";
+            CkPrintf("Strassen - Incorrect: matrix size = %d, Threshold = %d,# of proc = %d, Exec time = %lf sec \n",  size, THRESHOLD,CkNumPes(),endtimer-starttimer);
+            myfile<<"Strassen - Incorrect: matrix size = " <<size<<", Threshold = "<< THRESHOLD<<",# of proc = "<<CkNumPes()<<" , Exec time = " << endtimer-starttimer << "\n";
         }
-        delete m;
   myfile.close();
+        delete m;
 
         CkExit(); 
     }  
