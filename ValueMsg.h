@@ -3,16 +3,11 @@
 
 class ValueMsg : public CMessage_ValueMsg {
 public:
-    int** v;
+    std::vector<std::vector<int> > v;
     //i found a solution to allocate a non fixed sized without segment fault
-    ValueMsg(int size){
-    	v = new int*[size];
-    	for (int i = 0; i < size; ++i){
-            v[i] = new int[size];
-        }
+    ValueMsg(int size):v(size, std::vector<int>(size)){}
+    ValueMsg(){}
 
-
-    }
     //for the time being i am going to stick to array as vectors produce segment fault
     //int v[4][4];
  };
@@ -20,16 +15,13 @@ public:
 
 class AddSubMsg : public CMessage_AddSubMsg  {
 public:
-    int** A;
-    int** B;
+    std::vector<std::vector<int> > A;
+    std::vector<std::vector<int> > B;
     //i found a solution to allocate a non fixed sized without segment fault
+    AddSubMsg(){}
     AddSubMsg(int size){
-    	A = new int*[size];
-    	B = new int*[size];
-    	for (int i = 0; i < size; ++i){
-            A[i] = new int[size];
-            B[i] = new int[size];
-        }
+    	A = std::vector<std::vector<int>> (size,std::vector<int>(size));
+    	B = std::vector<std::vector<int>> (size,std::vector<int>(size));
     }
 
     //for the time being i am going to stick to array as vectors produce segment fault
@@ -39,16 +31,13 @@ public:
 
 class StrassenMsg : public CMessage_StrassenMsg  {
 public:
-    int** A;
-    int** B;
+    std::vector<std::vector<int> > A;
+    std::vector<std::vector<int> > B;
     //i found a solution to allocate a non fixed sized without segment fault
+    StrassenMsg(){}
     StrassenMsg(int size){
-    	A = new int*[size];
-    	B = new int*[size];
-    	for (int i = 0; i < size; ++i){
-            A[i] = new int[size];
-            B[i] = new int[size];
-        }
+    	A = std::vector<std::vector<int>> (size,std::vector<int>(size));
+    	B = std::vector<std::vector<int>> (size,std::vector<int>(size));
     }
 
     //for the time being i am going to stick to array as vectors produce segment fault
@@ -58,23 +47,18 @@ public:
 
  class StrassenSubMsg : public CMessage_StrassenSubMsg  {
 public:
-    int** A;
-    int** B;
-    int** C;
-    int** D;
+    std::vector<std::vector<int> > A;
+    std::vector<std::vector<int> > B;
+    std::vector<std::vector<int> > C;
+    std::vector<std::vector<int> > D;
     //i found a solution to allocate a non fixed sized without segment fault
+    StrassenSubMsg(){}
     
     StrassenSubMsg(int size){
-    	A = new int*[size];
-    	B = new int*[size];
-    	C = new int*[size];
-    	D = new int*[size];
-    	for (int i = 0; i < size; ++i){
-            A[i] = new int[size];
-            B[i] = new int[size];
-            C[i] = new int[size];
-            D[i] = new int[size];
-        }
+    	A = std::vector<std::vector<int>> (size,std::vector<int>(size));
+    	B = std::vector<std::vector<int>> (size,std::vector<int>(size));
+    	C = std::vector<std::vector<int>> (size,std::vector<int>(size));
+    	D = std::vector<std::vector<int>> (size,std::vector<int>(size));
     }
 
     //for the time being i am going to stick to array as vectors produce segment fault
