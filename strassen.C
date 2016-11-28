@@ -1,8 +1,10 @@
 #include <fstream>
+#include <vector>
 #include "strassen.decl.h"
 #include "StrassenSub.h"
 #include "AddSubMat.h"
 #include "ValueMsg.h"
+#include "pup_stl.h"
 
 int THRESHOLD;
 int VERBOSE;
@@ -99,10 +101,10 @@ class strassen : public CBase_strassen  {
 
     public:  
     strassen(CkMigrateMessage *m) {};
-    strassen(CkFuture f,std::vector<std::vector<int>> A,std::vector<std::vector<int>> B,int size){ thisProxy.run(f,A,B,size); }
+    strassen(CkFuture f,const std::vector<std::vector<int>>& A,const std::vector<std::vector<int>>& B,int size){ thisProxy.run(f,A,B,size); }
 
 
-    void run(CkFuture f,std::vector<std::vector<int>> A,std::vector<std::vector<int>> B,int size) {
+    void run(CkFuture f,const std::vector<std::vector<int>>& A,const std::vector<std::vector<int>>& B,int size) {
             //if(VERBOSE)CkPrintf("here stressen run 1:\n");
         ValueMsg *m = new ValueMsg(size);
 
@@ -118,6 +120,7 @@ class strassen : public CBase_strassen  {
         std::vector<std::vector<int>> b22(newSize,std::vector<int>(newSize));
 
 
+  if(VERBOSE)CkPrintf("Work done by processor %d\n",CkMyPe());
 
 
             //if(VERBOSE)CkPrintf("here stressen run 3:\n");
@@ -169,6 +172,7 @@ class strassen : public CBase_strassen  {
             ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1Future);
             //if(VERBOSE)CkPrintf("here stressen run 5:\n");
             if(VERBOSE)CkPrintf("done with m1 of size %d\n",newSize);
+  if(VERBOSE)CkPrintf("Work done by processor %d\n",CkMyPe());
 
 
             /*three addition*/
@@ -180,6 +184,7 @@ class strassen : public CBase_strassen  {
             //if(VERBOSE)CkPrintf("here stressen run 6:\n of size %d\n",newSize);
             if(VERBOSE)CkPrintf("done with m2 of size %d\n",newSize);
 
+  if(VERBOSE)CkPrintf("Work done by processor %d\n",CkMyPe());
 
 
 
@@ -190,6 +195,7 @@ class strassen : public CBase_strassen  {
             CProxy_strassenSub::ckNew(p3Future, a11, b12, b22,newSize,'3');
             ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p3Future);
             if(VERBOSE)CkPrintf("done with m3 of size %d\n",newSize);
+  if(VERBOSE)CkPrintf("Work done by processor %d\n",CkMyPe());
 
 
             //if(VERBOSE)CkPrintf("here stressen run 7:\n of size %d\n",newSize);
@@ -204,6 +210,7 @@ class strassen : public CBase_strassen  {
             //if(VERBOSE)CkPrintf("here stressen run 8:\n of size %d\n",newSize);
             if(VERBOSE)CkPrintf("done with m4 of size %d\n",newSize);
 
+  if(VERBOSE)CkPrintf("Work done by processor %d\n",CkMyPe());
 
 
             //the value of P5
@@ -214,23 +221,26 @@ class strassen : public CBase_strassen  {
             //if(VERBOSE)CkPrintf("here stressen run 9:\n");
             if(VERBOSE)CkPrintf("done with m5 of size %d\n",newSize);
 
+  if(VERBOSE)CkPrintf("Work done by processor %d\n",CkMyPe());
 
             //the value of P6
             /*partition M6 = (A21-A11)(B11+B12)*/
             CkFuture p6Future = CkCreateFuture();
-            CProxy_strassenSub::ckNew(p6Future, a21, a11, b11,b12,newSize,'6');
+            CProxy_strassenSub::ckNew(p6Future,a21,a11,b11,b12,newSize,'6');
             ValueMsg * m6 = (ValueMsg *) CkWaitFuture(p6Future);
             //if(VERBOSE)CkPrintf("here stressen run 10:\n");
             if(VERBOSE)CkPrintf("done with m6 of size %d\n",newSize);
 
+  if(VERBOSE)CkPrintf("Work done by processor %d\n",CkMyPe());
 
             //the value of P7
             /*OR partition M7 = (A12-A22)(B21+B22)*/
             CkFuture p7Future = CkCreateFuture();
-            CProxy_strassenSub::ckNew(p7Future, a12, a22, b21,b22,newSize,'7');
+            CProxy_strassenSub::ckNew(p7Future,a12,a22,b21,b22,newSize,'7');
             ValueMsg * m7 = (ValueMsg *) CkWaitFuture(p7Future);
             //if(VERBOSE)CkPrintf("here stressen run 11:\n");
             if(VERBOSE)CkPrintf("done with m7 of size %d\n",newSize);
+  if(VERBOSE)CkPrintf("Work done by processor %d\n",CkMyPe());
 
 
 
