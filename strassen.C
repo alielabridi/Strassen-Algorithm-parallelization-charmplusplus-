@@ -43,10 +43,10 @@ class Main : public CBase_Main {
         double starttimer = CkWallTimer();
         CkFuture f = CkCreateFuture();
 
-        StrassenMsg strassenMsg = StrassenMsg(size);
+        StrassenMsg *strassenMsg = new StrassenMsg(size);
         for (int i = 0; i < size; ++i){
-            strassenMsg.A[i] = A[i];
-            strassenMsg.B[i] = B[i];
+            strassenMsg->A[i] = A[i];
+            strassenMsg->B[i] = B[i];
         }
         CProxy_strassen::ckNew(f,strassenMsg,size);
 
@@ -105,10 +105,10 @@ class strassen : public CBase_strassen  {
 
     public:  
     strassen(CkMigrateMessage *m) {}
-    strassen(CkFuture f,StrassenMsg Msg,int size){ thisProxy.run(f,Msg,size); }
+    strassen(CkFuture f,StrassenMsg* Msg,int size){ thisProxy.run(f,Msg,size); }
 
 
-    void run(CkFuture f,StrassenMsg Msg,int size) {
+    void run(CkFuture f,StrassenMsg* Msg,int size) {
             //if(VERBOSE)CkPrintf("here stressen run 1:\n");
         ValueMsg *m = new ValueMsg(size);
 
@@ -134,7 +134,7 @@ class strassen : public CBase_strassen  {
                 for (int k = 0; k < size; k++) {
                     m->v[i][k] = 0;
                     for (int j = 0; j < size; j++) {
-                        m->v[i][k] += Msg.A[i][j] * Msg.B[j][k];
+                        m->v[i][k] += Msg->A[i][j] * Msg->B[j][k];
                     }
                 }
             }
@@ -148,15 +148,15 @@ class strassen : public CBase_strassen  {
 //dividing the matrices in 4 sub-matrices:
         for (int i = 0; i < newSize; i++) {
             for (int j = 0; j < newSize; j++) {
-                a11[i][j] = Msg.A[i][j];
-                a12[i][j] = Msg.A[i][j + newSize];
-                a21[i][j] = Msg.A[i + newSize][j];
-                a22[i][j] = Msg.A[i + newSize][j + newSize];
+                a11[i][j] = Msg->A[i][j];
+                a12[i][j] = Msg->A[i][j + newSize];
+                a21[i][j] = Msg->A[i + newSize][j];
+                a22[i][j] = Msg->A[i + newSize][j + newSize];
 
-                b11[i][j] = Msg.B[i][j];
-                b12[i][j] = Msg.B[i][j + newSize];
-                b21[i][j] = Msg.B[i + newSize][j];
-                b22[i][j] = Msg.B[i + newSize][j + newSize];
+                b11[i][j] = Msg->B[i][j];
+                b12[i][j] = Msg->B[i][j + newSize];
+                b21[i][j] = Msg->B[i + newSize][j];
+                b22[i][j] = Msg->B[i + newSize][j + newSize];
             }
         }
             //if(VERBOSE)CkPrintf("here stressen run 4-1:\n");
@@ -171,13 +171,13 @@ class strassen : public CBase_strassen  {
             //the value of P1
             /*M1 = (A11+A22)(B11+B22)*/
             CkFuture p1Future = CkCreateFuture();
-            StrassenSubMsg StrassenSubMsg1(newSize);
+            StrassenSubMsg* StrassenSubMsg1 = new StrassenSubMsg(newSize);
             for (int i = 0; i < newSize; ++i)
             {
-                StrassenSubMsg1.A[i] = a11[i];
-                StrassenSubMsg1.B[i] = a22[i];
-                StrassenSubMsg1.C[i] = b11[i];
-                StrassenSubMsg1.D[i] = b22[i];
+                StrassenSubMsg1->A[i] = a11[i];
+                StrassenSubMsg1->B[i] = a22[i];
+                StrassenSubMsg1->C[i] = b11[i];
+                StrassenSubMsg1->D[i] = b22[i];
             }
         
             CProxy_strassenSub::ckNew(p1Future, StrassenSubMsg1,newSize,'1');
@@ -190,12 +190,12 @@ class strassen : public CBase_strassen  {
             //the value of P2
             /*partition M2 =(A21+A22)B11*/
             CkFuture p2Future = CkCreateFuture();
-            StrassenSubMsg StrassenSubMsg2(newSize);
+            StrassenSubMsg* StrassenSubMsg2 = new StrassenSubMsg(newSize);
             for (int i = 0; i < newSize; ++i)
             {
-                StrassenSubMsg2.A[i] = a21[i];
-                StrassenSubMsg2.B[i] = a22[i];
-                StrassenSubMsg2.C[i] = b11[i];
+                StrassenSubMsg2->A[i] = a21[i];
+                StrassenSubMsg2->B[i] = a22[i];
+                StrassenSubMsg2->C[i] = b11[i];
             }
             CProxy_strassenSub::ckNew(p2Future, StrassenSubMsg2,newSize,'2');
             ValueMsg * m2 = (ValueMsg *) CkWaitFuture(p2Future);
@@ -209,12 +209,12 @@ class strassen : public CBase_strassen  {
             //the value of P3
             /*partition M3 = A11(B12-B22)*/
             CkFuture p3Future = CkCreateFuture();
-            StrassenSubMsg StrassenSubMsg3(newSize);
+            StrassenSubMsg* StrassenSubMsg3 = new StrassenSubMsg(newSize);
             for (int i = 0; i < newSize; ++i)
             {
-                StrassenSubMsg3.A[i] = a11[i];
-                StrassenSubMsg3.B[i] = b12[i];
-                StrassenSubMsg3.C[i] = b22[i];
+                StrassenSubMsg3->A[i] = a11[i];
+                StrassenSubMsg3->B[i] = b12[i];
+                StrassenSubMsg3->C[i] = b22[i];
             }
             CProxy_strassenSub::ckNew(p3Future, StrassenSubMsg3,newSize,'3');
             ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p3Future);
@@ -228,12 +228,12 @@ class strassen : public CBase_strassen  {
             //the value of P4
             /*OR partition M4 =A22(B21-B11)*/
             CkFuture p4Future = CkCreateFuture();
-            StrassenSubMsg StrassenSubMsg4(newSize);
+            StrassenSubMsg* StrassenSubMsg4 = new StrassenSubMsg(newSize);
             for (int i = 0; i < newSize; ++i)
             {
-                StrassenSubMsg4.A[i] = a22[i];
-                StrassenSubMsg4.B[i] = b21[i];
-                StrassenSubMsg4.C[i] = b11[i];
+                StrassenSubMsg4->A[i] = a22[i];
+                StrassenSubMsg4->B[i] = b21[i];
+                StrassenSubMsg4->C[i] = b11[i];
             }
             CProxy_strassenSub::ckNew(p4Future, StrassenSubMsg4,newSize,'4');
             ValueMsg * m4 = (ValueMsg *) CkWaitFuture(p4Future);
@@ -245,12 +245,12 @@ class strassen : public CBase_strassen  {
             //the value of P5
             /*OR partition M5 =(A11+A12)B22*/
             CkFuture p5Future = CkCreateFuture();
-            StrassenSubMsg StrassenSubMsg5(newSize);
+            StrassenSubMsg* StrassenSubMsg5 = new StrassenSubMsg(newSize);
             for (int i = 0; i < newSize; ++i)
             {
-                StrassenSubMsg5.A[i] = a11[i];
-                StrassenSubMsg5.B[i] = a12[i];
-                StrassenSubMsg5.C[i] = b22[i];
+                StrassenSubMsg5->A[i] = a11[i];
+                StrassenSubMsg5->B[i] = a12[i];
+                StrassenSubMsg5->C[i] = b22[i];
             }
             CProxy_strassenSub::ckNew(p5Future, StrassenSubMsg5,newSize,'5');
             ValueMsg * m5 = (ValueMsg *) CkWaitFuture(p5Future);
@@ -261,13 +261,13 @@ class strassen : public CBase_strassen  {
             //the value of P6
             /*partition M6 = (A21-A11)(B11+B12)*/
             CkFuture p6Future = CkCreateFuture();
-            StrassenSubMsg StrassenSubMsg6(newSize);
+            StrassenSubMsg* StrassenSubMsg6 = new StrassenSubMsg(newSize);
             for (int i = 0; i < newSize; ++i)
             {
-                StrassenSubMsg6.A[i] = a21[i];
-                StrassenSubMsg6.B[i] = a11[i];
-                StrassenSubMsg6.C[i] = b11[i];
-                StrassenSubMsg6.D[i] = b12[i];
+                StrassenSubMsg6->A[i] = a21[i];
+                StrassenSubMsg6->B[i] = a11[i];
+                StrassenSubMsg6->C[i] = b11[i];
+                StrassenSubMsg6->D[i] = b12[i];
             }
         
             CProxy_strassenSub::ckNew(p6Future, StrassenSubMsg6,newSize,'6');
@@ -279,13 +279,13 @@ class strassen : public CBase_strassen  {
             //the value of P7
             /*OR partition M7 = (A12-A22)(B21+B22)*/
             CkFuture p7Future = CkCreateFuture();
-            StrassenSubMsg StrassenSubMsg7(newSize);
+            StrassenSubMsg* StrassenSubMsg7 = new StrassenSubMsg(newSize);
             for (int i = 0; i < newSize; ++i)
             {
-                StrassenSubMsg7.A[i] = a12[i];
-                StrassenSubMsg7.B[i] = a22[i];
-                StrassenSubMsg7.C[i] = b12[i];
-                StrassenSubMsg7.D[i] = b22[i];
+                StrassenSubMsg7->A[i] = a12[i];
+                StrassenSubMsg7->B[i] = a22[i];
+                StrassenSubMsg7->C[i] = b12[i];
+                StrassenSubMsg7->D[i] = b22[i];
             }
         
             CProxy_strassenSub::ckNew(p7Future,StrassenSubMsg7 ,newSize,'7');

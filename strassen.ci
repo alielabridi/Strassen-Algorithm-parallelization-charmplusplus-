@@ -10,22 +10,22 @@ readonly int VERBOSE;
 	entry [threaded] void run(int size_);
 	};
 	chare strassen {  
-	entry strassen(CkFuture f,StrassenMsg Msg,int size);
-	entry [threaded] void run(CkFuture f,StrassenMsg Msg,int size);
+	entry strassen(CkFuture f,StrassenMsg* Msg,int size);
+	entry [threaded] void run(CkFuture f,StrassenMsg* Msg,int size);
 	};  
 	chare strassenSub {  
-    entry strassenSub(CkFuture f,StrassenSubMsg Msg,
+    entry strassenSub(CkFuture f,StrassenSubMsg* Msg,
               int size, char partition);
-	entry [threaded] void run(CkFuture f,StrassenSubMsg Msg,
+	entry [threaded] void run(CkFuture f,StrassenSubMsg* Msg,
               int size, char partition);
 	};  
 	chare addition {  
-	entry addition(CkFuture f,AddSubMsg Msg, int size);
-	entry [threaded] void run(CkFuture f,AddSubMsg Msg, int size);
+	entry addition(CkFuture f,AddSubMsg* Msg, int size);
+	entry [threaded] void run(CkFuture f,AddSubMsg* Msg, int size);
 	};
 	chare substraction {  
-	entry substraction(CkFuture f,AddSubMsg Msg, int size);
-	entry [threaded] void run(CkFuture f,AddSubMsg Msg, int size);
+	entry substraction(CkFuture f,AddSubMsg* Msg, int size);
+	entry [threaded] void run(CkFuture f,AddSubMsg* Msg, int size);
 	};
 
  }
