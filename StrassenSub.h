@@ -11,11 +11,11 @@ public:
     /*four additions*/
 
      /*three addition*/
-    strassenSub(CkFuture f,StrassenSubMsg* Msg,
+    strassenSub(CkFuture f,StrassenSubMsg Msg,
               int size, char partition){ thisProxy.run(f,Msg,size,partition); }
 
 
-    void run(CkFuture f,StrassenSubMsg* Msg,
+    void run(CkFuture f,StrassenSubMsg Msg,
                   int size,char partition){
 
         //do the addition/substraction, and wait for for the result then call on it the bigger strassen chare
@@ -25,22 +25,22 @@ public:
             /*partition M2 =(A21+A22)B11*/
             /*OR partition M5 =(A11+A12)B22*/
             CkFuture padd1 = CkCreateFuture(); 
-            AddSubMsg* addSubMsg = new AddSubMsg(size);
+            AddSubMsg addSubMsg(size);
             for (int i = 0; i < size; ++i)
             {
-                addSubMsg->A[i] = Msg->A[i];
-                addSubMsg->B[i] = Msg->B[i];
+                addSubMsg.A[i] = Msg.A[i];
+                addSubMsg.B[i] = Msg.B[i];
             }
             //i could spawn all the additions needed here   
             CProxy_addition::ckNew(padd1,addSubMsg,size);//param not matching yet just a pseudo code
             //ValueMsg *m1 = new ValueMsg(size);
             ValueMsg * m1 = (ValueMsg *) CkWaitFuture(padd1);
             CkFuture p = CkCreateFuture();
-            StrassenMsg* strassenMsg = new StrassenMsg(size);
+            StrassenMsg strassenMsg(size);
             for (int i = 0; i < size; ++i)
             {
-            strassenMsg->A[i] = m1->v[i];
-            strassenMsg->B[i] = Msg->C[i];
+            strassenMsg.A[i] = m1->v[i];
+            strassenMsg.B[i] = Msg.C[i];
             }
             CProxy_strassen::ckNew(p,strassenMsg,size);
             //i could free m1 and m2 at this point
@@ -58,21 +58,21 @@ public:
             /*OR partition M4 =A22(B21-B11)*/
             CkFuture psub1 = CkCreateFuture(); 
             //i could spawn all the additions needed here
-            AddSubMsg* addSubMsg = new AddSubMsg(size);
+            AddSubMsg addSubMsg(size);
             for (int i = 0; i < size; ++i)
             {
-                addSubMsg->A[i] = Msg->B[i];
-                addSubMsg->B[i] = Msg->C[i];
+                addSubMsg.A[i] = Msg.B[i];
+                addSubMsg.B[i] = Msg.C[i];
             }
             CProxy_substraction::ckNew(psub1,addSubMsg,size);//param not matching yet just a pseudo code
             //ValueMsg *m1 = new ValueMsg(size);
             ValueMsg * m1 = (ValueMsg *) CkWaitFuture(psub1);
             CkFuture p = CkCreateFuture();
-            StrassenMsg* strassenMsg = new StrassenMsg(size);
+            StrassenMsg strassenMsg(size);
             for (int i = 0; i < size; ++i)
             {
-            strassenMsg->A[i] = Msg->A[i];
-            strassenMsg->B[i] = m1->v[i];
+            strassenMsg.A[i] = Msg.A[i];
+            strassenMsg.B[i] = m1->v[i];
             }
             CProxy_strassen::ckNew(p,strassenMsg, size); 
             //i could free m1 and m2 at this point
@@ -100,14 +100,14 @@ public:
             CkFuture p1add2 = CkCreateFuture(); //B11+B22
             //i could spawn all the additions needed here   
             //if(VERBOSE)CkPrintf("here stressen SUB run 2:\n");
-            AddSubMsg* addSubMsg1 = new AddSubMsg(size);
-            AddSubMsg* addSubMsg2 = new AddSubMsg(size);
+            AddSubMsg addSubMsg1(size);
+            AddSubMsg addSubMsg2(size);
             for (int i = 0; i < size; ++i)
             {
-                addSubMsg1->A[i] = Msg->A[i];
-                addSubMsg1->B[i] = Msg->B[i];
-                addSubMsg2->A[i] = Msg->C[i];
-                addSubMsg2->B[i] = Msg->D[i];
+                addSubMsg1.A[i] = Msg.A[i];
+                addSubMsg1.B[i] = Msg.B[i];
+                addSubMsg2.A[i] = Msg.C[i];
+                addSubMsg2.B[i] = Msg.D[i];
             }
             CProxy_addition::ckNew(p1add1,addSubMsg1,size);//param not matching yet just a pseudo code
             CProxy_addition::ckNew(p1add2,addSubMsg2,size);//param not matching yet just a pseudo code
@@ -132,11 +132,11 @@ public:
             CkFuture p1 = CkCreateFuture();
             //if(VERBOSE)CkPrintf("here stressen SUB run 5:\n");
 
-            StrassenMsg* strassenMsg = new StrassenMsg(size);
+            StrassenMsg strassenMsg(size);
             for (int i = 0; i < size; ++i)
             {
-            strassenMsg->A[i] = m1->v[i];
-            strassenMsg->B[i] = m2->v[i];
+            strassenMsg.A[i] = m1->v[i];
+            strassenMsg.B[i] = m2->v[i];
             }
             CProxy_strassen::ckNew(p1,strassenMsg,size); //to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
             //if(VERBOSE)CkPrintf("here stressen SUB run 6:\n");
@@ -163,14 +163,14 @@ public:
             CkFuture psub1 = CkCreateFuture(); 
             CkFuture padd2 = CkCreateFuture(); 
             //i could spawn all the additions needed here   
-            AddSubMsg* addSubMsg1 = new AddSubMsg(size);
-            AddSubMsg* addSubMsg2 = new AddSubMsg(size);
+            AddSubMsg addSubMsg1(size);
+            AddSubMsg addSubMsg2(size);
             for (int i = 0; i < size; ++i)
             {
-                addSubMsg1->A[i] = Msg->A[i];
-                addSubMsg1->B[i] = Msg->B[i];
-                addSubMsg2->A[i] = Msg->C[i];
-                addSubMsg2->B[i] = Msg->D[i];
+                addSubMsg1.A[i] = Msg.A[i];
+                addSubMsg1.B[i] = Msg.B[i];
+                addSubMsg2.A[i] = Msg.C[i];
+                addSubMsg2.B[i] = Msg.D[i];
             }
             CProxy_substraction::ckNew(psub1,addSubMsg1,size);//param not matching yet just a pseudo code
             CProxy_addition::ckNew(padd2,addSubMsg2,size);//param not matching yet just a pseudo code
@@ -179,11 +179,11 @@ public:
             ValueMsg * m1 = (ValueMsg *) CkWaitFuture(psub1);
             ValueMsg * m2 = (ValueMsg *) CkWaitFuture(padd2);
             CkFuture p = CkCreateFuture();
-            StrassenMsg* strassenMsg = new StrassenMsg(size);
+            StrassenMsg strassenMsg(size);
             for (int i = 0; i < size; ++i)
             {
-            strassenMsg->A[i] = m1->v[i];
-            strassenMsg->B[i] = m2->v[i];
+            strassenMsg.A[i] = m1->v[i];
+            strassenMsg.B[i] = m2->v[i];
             }
             CProxy_strassen::ckNew(p,strassenMsg,size);//to do (A11+A22)*(B11+B22) by giving m1->v and m2->v
             //i could free m1 and m2 at this point
