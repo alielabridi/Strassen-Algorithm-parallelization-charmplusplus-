@@ -43,11 +43,16 @@ class Main : public CBase_Main {
 
         /*execution of parralelization*/
         double starttimer = CkWallTimer();
+        clock_t begin = clock();
+
         CkFuture f = CkCreateFuture();
         CProxy_strassen::ckNew(f,A,B,size);
 
         ValueMsg * m = (ValueMsg *) CkWaitFuture(f); 
         double endtimer = CkWallTimer();
+        clock_t end = clock();
+
+  double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
 
         if(VERBOSE)CkPrintf("FINAL - The resulting matrix is :\n");
 
@@ -75,12 +80,12 @@ class Main : public CBase_Main {
         
         }
         else if(!correctness && THRESHOLD == size){
-            CkPrintf("Naive Serial - Incorrect: matrix size = %d, Exec time = %lf sec \n",  size,endtimer-starttimer);
+            CkPrintf("Naive Serial - Incorrect: matrix size = %d, Exec time = %lf(cpp: %lf) sec \n",  size,endtimer-starttimer,elapsed_secs);
             myfile<<"Naive Serial - Incorrect: matrix size = " <<size<<" , Exec time = " << endtimer-starttimer << "\n";
         
         }
         else if(correctness){
-            CkPrintf("Strassen - Correct: matrix size = %d, Threshold = %d,# of proc = %d, Exec time = %lf sec \n",  size, THRESHOLD,CkNumPes(),endtimer-starttimer);
+            CkPrintf("Strassen - Correct: matrix size = %d, Threshold = %d,# of proc = %d, Exec time = %lf sec (cpp: %lf) \n",  size, THRESHOLD,CkNumPes(),endtimer-starttimer,elapsed_secs);
             myfile<<"Strassen - Correct: matrix size = " <<size<<", Threshold = "<< THRESHOLD<<",# of proc = "<<CkNumPes()<<" , Exec time = " << endtimer-starttimer << "\n";
         }
         else{
@@ -169,7 +174,6 @@ class strassen : public CBase_strassen  {
             /*M1 = (A11+A22)(B11+B22)*/
             CkFuture p1Future = CkCreateFuture();
             CProxy_strassenSub::ckNew(p1Future, a11, a22, b11, b22,newSize,'1');
-            ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1Future);
             //if(VERBOSE)CkPrintf("here stressen run 5:\n");
             if(VERBOSE)CkPrintf("done with m1 of size %d\n",newSize);
   if(VERBOSE)CkPrintf("Work done by processor %d\n",CkMyPe());
@@ -180,7 +184,6 @@ class strassen : public CBase_strassen  {
             /*partition M2 =(A21+A22)B11*/
             CkFuture p2Future = CkCreateFuture();
             CProxy_strassenSub::ckNew(p2Future, a21, a22, b11,newSize,'2');
-            ValueMsg * m2 = (ValueMsg *) CkWaitFuture(p2Future);
             //if(VERBOSE)CkPrintf("here stressen run 6:\n of size %d\n",newSize);
             if(VERBOSE)CkPrintf("done with m2 of size %d\n",newSize);
 
@@ -193,7 +196,6 @@ class strassen : public CBase_strassen  {
             /*partition M3 = A11(B12-B22)*/
             CkFuture p3Future = CkCreateFuture();
             CProxy_strassenSub::ckNew(p3Future, a11, b12, b22,newSize,'3');
-            ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p3Future);
             if(VERBOSE)CkPrintf("done with m3 of size %d\n",newSize);
   if(VERBOSE)CkPrintf("Work done by processor %d\n",CkMyPe());
 
@@ -206,7 +208,6 @@ class strassen : public CBase_strassen  {
             /*OR partition M4 =A22(B21-B11)*/
             CkFuture p4Future = CkCreateFuture();
             CProxy_strassenSub::ckNew(p4Future, a22, b21, b11,newSize,'4');
-            ValueMsg * m4 = (ValueMsg *) CkWaitFuture(p4Future);
             //if(VERBOSE)CkPrintf("here stressen run 8:\n of size %d\n",newSize);
             if(VERBOSE)CkPrintf("done with m4 of size %d\n",newSize);
 
@@ -217,7 +218,6 @@ class strassen : public CBase_strassen  {
             /*OR partition M5 =(A11+A12)B22*/
             CkFuture p5Future = CkCreateFuture();
             CProxy_strassenSub::ckNew(p5Future, a11, a12, b22,newSize,'5');
-            ValueMsg * m5 = (ValueMsg *) CkWaitFuture(p5Future);
             //if(VERBOSE)CkPrintf("here stressen run 9:\n");
             if(VERBOSE)CkPrintf("done with m5 of size %d\n",newSize);
 
@@ -227,7 +227,6 @@ class strassen : public CBase_strassen  {
             /*partition M6 = (A21-A11)(B11+B12)*/
             CkFuture p6Future = CkCreateFuture();
             CProxy_strassenSub::ckNew(p6Future,a21,a11,b11,b12,newSize,'6');
-            ValueMsg * m6 = (ValueMsg *) CkWaitFuture(p6Future);
             //if(VERBOSE)CkPrintf("here stressen run 10:\n");
             if(VERBOSE)CkPrintf("done with m6 of size %d\n",newSize);
 
@@ -237,12 +236,22 @@ class strassen : public CBase_strassen  {
             /*OR partition M7 = (A12-A22)(B21+B22)*/
             CkFuture p7Future = CkCreateFuture();
             CProxy_strassenSub::ckNew(p7Future,a12,a22,b21,b22,newSize,'7');
-            ValueMsg * m7 = (ValueMsg *) CkWaitFuture(p7Future);
             //if(VERBOSE)CkPrintf("here stressen run 11:\n");
             if(VERBOSE)CkPrintf("done with m7 of size %d\n",newSize);
   if(VERBOSE)CkPrintf("Work done by processor %d\n",CkMyPe());
 
+            ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1Future);
+            ValueMsg * m2 = (ValueMsg *) CkWaitFuture(p2Future);
+           
+            ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p3Future);
+           
+            ValueMsg * m4 = (ValueMsg *) CkWaitFuture(p4Future);
 
+            ValueMsg * m5 = (ValueMsg *) CkWaitFuture(p5Future);
+
+            ValueMsg * m6 = (ValueMsg *) CkWaitFuture(p6Future);
+
+            ValueMsg * m7 = (ValueMsg *) CkWaitFuture(p7Future);
 
             /*do we need another chare for the C1,C2,C3,C4 ?*/
             /*compute C11 = M1+M4-M5+M7*/
