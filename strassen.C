@@ -85,12 +85,12 @@ class Main : public CBase_Main {
         
         }
         else if(correctness){
-            CkPrintf("Strassen - Correct: matrix size = %d, Threshold = %d,# of proc = %d, Exec time = %lf sec (cpp: %lf) \n",  size, THRESHOLD,CkNumPes(),endtimer-starttimer,elapsed_secs);
-            myfile<<"Strassen - Correct: matrix size = " <<size<<", Threshold = "<< THRESHOLD<<",# of proc = "<<CkNumPes()<<" , Exec time = " << endtimer-starttimer << "\n";
+            CkPrintf("Charm++ - Correct: matrix size = %d, Threshold = %d,# of proc = %d, Exec time = %lf sec (cpp: %lf) \n",  size, THRESHOLD,CkNumPes(),endtimer-starttimer,elapsed_secs);
+            myfile<<"Charm++ - Correct: matrix size = " <<size<<", Threshold = "<< THRESHOLD<<",# of proc = "<<CkNumPes()<<" , Exec time = " << endtimer-starttimer << "\n";
         }
         else{
-            CkPrintf("Strassen - Incorrect: matrix size = %d, Threshold = %d,# of proc = %d, Exec time = %lf sec \n",  size, THRESHOLD,CkNumPes(),endtimer-starttimer);
-            myfile<<"Strassen - Incorrect: matrix size = " <<size<<", Threshold = "<< THRESHOLD<<",# of proc = "<<CkNumPes()<<" , Exec time = " << endtimer-starttimer << "\n";
+            CkPrintf("Charm++ - Incorrect: matrix size = %d, Threshold = %d,# of proc = %d, Exec time = %lf sec \n",  size, THRESHOLD,CkNumPes(),endtimer-starttimer);
+            myfile<<"Charm++ - Incorrect: matrix size = " <<size<<", Threshold = "<< THRESHOLD<<",# of proc = "<<CkNumPes()<<" , Exec time = " << endtimer-starttimer << "\n";
         }
   myfile.close();
         delete m;
@@ -242,15 +242,10 @@ class strassen : public CBase_strassen  {
 
             ValueMsg * m1 = (ValueMsg *) CkWaitFuture(p1Future);
             ValueMsg * m2 = (ValueMsg *) CkWaitFuture(p2Future);
-           
             ValueMsg * m3 = (ValueMsg *) CkWaitFuture(p3Future);
-           
             ValueMsg * m4 = (ValueMsg *) CkWaitFuture(p4Future);
-
             ValueMsg * m5 = (ValueMsg *) CkWaitFuture(p5Future);
-
             ValueMsg * m6 = (ValueMsg *) CkWaitFuture(p6Future);
-
             ValueMsg * m7 = (ValueMsg *) CkWaitFuture(p7Future);
 
             /*do we need another chare for the C1,C2,C3,C4 ?*/
