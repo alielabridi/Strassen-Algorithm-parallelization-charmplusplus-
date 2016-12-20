@@ -15,7 +15,7 @@
 # done
 
 
-for size in {10..12}
+for size in {6..10}
 do
 	for THRESHOLD in {6..7}
 		do

@@ -1,6 +1,7 @@
 #ifndef STRASSEN_ADDSUBMAT_H
 #define STRASSEN_ADDSUBMAT_H
 #include "ValueMsg.h"
+#define VERBOSE2 0
 
 class addition :public CBase_addition{
     public:
@@ -9,6 +10,7 @@ class addition :public CBase_addition{
         thisProxy.run(f,A,B,size);
     }
     void run(CkFuture f,const std::vector<std::vector<int>>& A, const std::vector<std::vector<int>>& B, int size){
+    if(VERBOSE2)CkPrintf("Chare addition (size = %d) done by processor %d\n",size,CkMyPe());
         /*wrap the resulting addition in a message of size and send it back to future*/
         ValueMsg *m = new ValueMsg(size);
         for (int i = 0; i < size; ++i)
@@ -25,7 +27,7 @@ class substraction :public CBase_substraction{
         thisProxy.run(f,A,B,size);
     }
     void run(CkFuture f,const std::vector<std::vector<int>>& A, const std::vector<std::vector<int>>& B, int size){
-    //CkPrintf("substraction: Work done by processor %d\n",CkMyPe());
+    if(VERBOSE2)CkPrintf("Chare substraction (size = %d) done by processor %d\n",size,CkMyPe());
         /*wrap the resulting addition in a message of size and send it back to future*/
         ValueMsg *m = new ValueMsg(size);
         for (int i = 0; i < size; ++i)

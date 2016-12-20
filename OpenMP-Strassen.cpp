@@ -275,10 +275,15 @@ omp_set_dynamic(0);     // Explicitly disable dynamic teams
 omp_set_num_threads(proc);
 
 start = omp_get_wtime();
+        clock_t begin = clock();
+
   matmultS(size, size, size, A, B, C);
+          clock_t endclock = clock();
+
   end = omp_get_wtime();
 
   double elapsed_secs = end - start;
+  double elapsed_secsclock = double(end - begin) / CLOCKS_PER_SEC;
 
         /*checking result if correct*/
 
@@ -290,12 +295,12 @@ start = omp_get_wtime();
             for (int j = 0; j < size; ++j)
                 if(C[i][j] != A[i][j]) correctness = false;
         if(correctness){
-            printf("OpenMP - Correct: matrix size = %d, Threshold = %d,# of proc = %d, Exec time = %lf sec \n",  size, THRESHOLD,omp_get_max_threads(),elapsed_secs );
-            myfile<<"OpenMP - Correct: matrix size = " <<size<<", Threshold = "<< THRESHOLD<<",# of proc = "<<omp_get_max_threads()<<" , Exec time = " << elapsed_secs << "\n";
+            printf("OpenMP - Correct: matrix size = %d, Threshold = %d,# of proc = %d, Exec time = %lf sec \n",  size, THRESHOLD,omp_get_max_threads(),elapsed_secsclock );
+            myfile<<"OpenMP - Correct: matrix size = " <<size<<", Threshold = "<< THRESHOLD<<",# of proc = "<<omp_get_max_threads()<<" , Exec time = " << elapsed_secsclock << "\n";
         }
         else{
-            printf("OpenMP - Incorrect: matrix size = %d, Threshold = %d,# of proc = %d, Exec time = %lf sec \n",  size, THRESHOLD,omp_get_max_threads(),elapsed_secs );
-            myfile<<"OpenMP - Incorrect: matrix size = " <<size<<", Threshold = "<< THRESHOLD<<",# of proc = "<<omp_get_max_threads()<<" , Exec time = " << elapsed_secs << "\n";
+            printf("OpenMP - Incorrect: matrix size = %d, Threshold = %d,# of proc = %d, Exec time = %lf sec \n",  size, THRESHOLD,omp_get_max_threads(),elapsed_secsclock );
+            myfile<<"OpenMP - Incorrect: matrix size = " <<size<<", Threshold = "<< THRESHOLD<<",# of proc = "<<omp_get_max_threads()<<" , Exec time = " << elapsed_secsclock << "\n";
         }
   myfile.close();
 
